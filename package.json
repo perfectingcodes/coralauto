@@ -1,0 +1,13 @@
+{
+  "name": "coral-auto-spa",
+  "version": "1.0.0",
+  "description": "Marketing site for Coral Auto Spa — premium mobile auto detailing.",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}
