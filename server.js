@@ -10,6 +10,17 @@ const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
 const ROOT = path.join(__dirname, "public");
 const BOOKINGS_FILE = path.join(__dirname, "bookings.log");
+const UPLOADS_DIR = path.join(__dirname, "uploads");
+
+// Upload limits, kept in step with the client-side checks in main.js.
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_BODY_BYTES = 30 * 1024 * 1024;   // 5 photos + fields, with headroom
+const PHOTO_TYPES = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp"
+};
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -73,53 +84,123 @@ function serveStatic(req, res) {
   });
 }
 
-function handleBooking(req, res) {
-  let body = "";
-  let tooBig = false;
+/**
+ * Decode the data: URLs the form sends and write them into uploads/.
+ * Returns the saved filenames. Anything that fails validation is skipped
+ * rather than failing the whole booking — the enquiry matters more.
+ */
+function savePhotos(photos, ref) {
+  if (!Array.isArray(photos) || !photos.length) return [];
 
-  req.on("data", (chunk) => {
-    body += chunk;
-    if (body.length > 12_000) {
-      tooBig = true;
-      req.destroy();
+  try {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  } catch (err) {
+    console.error("Could not create uploads dir:", err.message);
+    return [];
+  }
+
+  const saved = [];
+
+  photos.slice(0, MAX_PHOTOS).forEach((photo, i) => {
+    if (!photo || typeof photo.data !== "string") return;
+
+    const match = /^data:([a-z]+\/[a-z+.-]+);base64,(.+)$/i.exec(photo.data);
+    if (!match) return;
+
+    const mime = match[1].toLowerCase();
+    const ext = PHOTO_TYPES[mime];
+    if (!ext) return;
+
+    let buf;
+    try {
+      buf = Buffer.from(match[2], "base64");
+    } catch {
+      return;
+    }
+    if (!buf.length || buf.length > MAX_PHOTO_BYTES) return;
+
+    // Name the file ourselves; never trust the client's filename.
+    const filename = `${ref}-${i + 1}${ext}`;
+    try {
+      fs.writeFileSync(path.join(UPLOADS_DIR, filename), buf);
+      saved.push(filename);
+    } catch (err) {
+      console.error("Could not save photo:", err.message);
     }
   });
 
+  return saved;
+}
+
+function handleBooking(req, res) {
+  const chunks = [];
+  let received = 0;
+  let tooBig = false;
+
+  req.on("data", (chunk) => {
+    received += chunk.length;
+    if (received > MAX_BODY_BYTES) {
+      tooBig = true;
+      req.destroy();
+      return;
+    }
+    chunks.push(chunk);
+  });
+
   req.on("end", () => {
-    if (tooBig) return sendJson(res, 413, { error: "Request too large" });
+    if (tooBig) return sendJson(res, 413, { error: "Those photos are too large. Try fewer, or smaller ones." });
 
     let data;
     try {
-      data = JSON.parse(body || "{}");
+      data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
     } catch {
       return sendJson(res, 400, { error: "Invalid request" });
     }
 
     const clean = (v, max = 400) => String(v == null ? "" : v).trim().slice(0, max);
+
+    const addons = Array.isArray(data.addons)
+      ? data.addons.map((a) => clean(a, 40)).filter(Boolean).slice(0, 10)
+      : [];
+
     const booking = {
       receivedAt: new Date().toISOString(),
       name: clean(data.name, 120),
       phone: clean(data.phone, 40),
       email: clean(data.email, 160),
-      service: clean(data.service, 60),
       vehicle: clean(data.vehicle, 120),
-      notes: clean(data.notes, 1000)
+      address: clean(data.address, 240),
+      date: clean(data.date, 20),
+      time: clean(data.time, 20),
+      addons,
+      seats: clean(data.seats, 4),
+      notes: clean(data.notes, 1500)
     };
 
-    if (!booking.name || !booking.phone || !booking.email || !booking.service) {
-      return sendJson(res, 400, { error: "Name, phone, email and service are required." });
+    const missing = ["name", "phone", "email", "vehicle", "address", "date", "time"]
+      .filter((k) => !booking[k]);
+    if (missing.length) {
+      return sendJson(res, 400, { error: "Please fill in your name, phone, email, vehicle, address, date and time." });
     }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(booking.email)) {
       return sendJson(res, 400, { error: "Please enter a valid email address." });
     }
 
+    const ref = Date.now().toString(36);
+    booking.ref = ref;
+    booking.photos = savePhotos(data.photos, ref);
+
     // Append to a local log. Swap this for email/CRM when one is connected.
     fs.appendFile(BOOKINGS_FILE, JSON.stringify(booking) + "\n", (err) => {
       if (err) console.error("Could not record booking:", err.message);
-      console.log(`[booking] ${booking.name} — ${booking.service} — ${booking.phone}`);
+      console.log(
+        `[booking ${ref}] ${booking.name} — ${booking.vehicle} — ${booking.phone}` +
+        (booking.addons.length ? ` — add-ons: ${booking.addons.join(", ")}` : "") +
+        (booking.photos.length ? ` — ${booking.photos.length} photo(s)` : "")
+      );
       sendJson(res, 200, {
         ok: true,
-        message: `Thanks ${booking.name.split(" ")[0]}! Your request is in. We'll confirm shortly.`
+        message: `Thanks ${booking.name.split(" ")[0]}! Your request is in. We'll confirm your time and your price shortly.`
       });
     });
   });

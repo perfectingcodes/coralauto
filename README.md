@@ -25,20 +25,21 @@ The server binds `0.0.0.0` and reads `process.env.PORT`, which is what Replit ex
 
 ```
 public/
-  index.html            single page: hero, services, packages, about,
-                        process, gallery, reviews, guarantee, FAQ,
-                        booking, footer. Opens with an inline SVG sprite
-                        that every icon on the page references.
+  index.html            single page: hero, the detail, pricing, about,
+                        process, gallery, guarantee, FAQ, booking, footer.
+                        Opens with an inline SVG sprite that every icon
+                        on the page references.
   assets/css/styles.css design tokens and all component styles
-  assets/js/main.js     sticky header, sliding nav pill, full-screen
-                        mobile menu, scroll reveal, FAQ accordion,
-                        package preselect, booking submit
+  assets/js/main.js     sticky header, sliding nav pill, mobile menu,
+                        scroll reveal, FAQ accordion, three-step booking
+                        wizard, photo attachments, booking submit
   assets/img/           brand badges and photography
 server.js               static file server + POST /api/booking
+uploads/                customer-submitted photos (gitignored, not served)
 scripts/
   process_assets.py     logo knockout + hero crops
   add_guarantee.py      guarantee badge
-  add_packages.py       Gold / Platinum / MVP badges
+  add_packages.py       legacy package badges (no longer used on the site)
   add_stock.py          crops the licensed stock photography
   make_responsive.py    builds the -sm variants used by srcset
 ```
@@ -104,44 +105,97 @@ aware that images are served with a one-week cache.** Returning visitors keep
 the old file until it expires. If that matters for a launch, rename the image
 or add a query string to its `src`.
 
-## Package pricing is placeholder
+## The offer
 
-The three package cards in the Packages section carry invented prices and
-durations:
+The site sells **one** service:
 
-| Package | Price shown | Duration shown |
-| --- | --- | --- |
-| Gold | $149 | About 1.5 hours |
-| Platinum | $249 | About 3 hours |
-| MVP | $399 | About 5 hours |
+**Full Interior & Exterior Detail — starting at $100.**
 
-**Set these to your real rates before launch.** The same goes for what each
-package includes, and for the four promises in the Guarantee section, which
-commit you to a 48-hour callback, on-time arrival, insured staff and a handover
-walkthrough. Confirm every one of those is something you actually offer.
+Exterior: complete hand wash and dry, wheels, tires and wheel wells, exterior
+windows, exterior trim, tire dressing.
 
-Each package button carries `data-package`, which preselects the matching option
-in the booking form. If you rename a package, update the button's `data-package`
-value and the matching `<option>` together or the preselect stops working.
+Interior: trash removed and blown out, deep vacuum of seats, carpets, mats and
+trunk, dashboard, center console, cupholders, vents, door panels, door jambs,
+interior windows, detailing brushes through the tight spots.
+
+Explicitly outside the base price: shampooing, stain extraction and heavy steam
+cleaning.
+
+### Add-ons
+
+| Add-on | Price |
+| --- | --- |
+| Seat shampoo & stain removal | $15 per seat |
+| Carpet shampoo | Quoted |
+| Heavy stain removal | Quoted |
+| Excessive pet hair | Quoted |
+| Excessive sand | Quoted |
+| Odor treatment | Quoted |
+| Extremely dirty vehicle | Quoted |
+
+The page states throughout that the final price depends on vehicle size and
+condition, and is confirmed with the customer before any work starts.
+
+### Kept for later
+
+The Gold / Platinum / MVP badge artwork is still in `assets/img/` (`pkg-*.webp`)
+and `scripts/add_packages.py` still builds it, even though nothing references it
+now. It is there for if the business ever does move to tiers. Nothing on the
+live page links to it.
+
+### Not offered
+
+Paint correction, machine polishing and ceramic coating are deliberately absent,
+and the FAQ says so plainly. Do not add them back until the equipment and the
+intent are actually there. The stock photo of a detailer using a machine
+polisher was removed for the same reason.
 
 ## Booking form
 
-`POST /api/booking` validates name, phone, email and service, then appends a JSON
-line to `bookings.log`. That file is gitignored because it holds customer contact
-details, and on Replit it does not survive a redeploy.
+A three-step wizard, so the first thing anyone sees is three easy fields:
 
-Before taking real bookings, send submissions somewhere durable: an email API,
-a Google Sheet, or a CRM webhook. The handler is at the bottom of `server.js`.
+1. **Your Details** — name, phone, email
+2. **Vehicle & Time** — vehicle, service address, preferred date and time
+3. **Condition** — add-ons, seat count, free-text condition, photo upload
 
-## Placeholder content to replace
+Each step validates before it will advance, with inline messages under the
+offending field. Completed steps can be revisited from the numbered bar. The
+final submit re-checks every step, not just the visible one.
 
-- Phone `(555) 012-7278` and email `hello@coralautospa.com`, in `index.html`
-  and in the JSON-LD block in `<head>`
-- Social links in the footer, currently `href="#"`
-- The three reviews, which came from the design mock
-- Package prices, inclusions and durations (see above)
-- The four guarantee promises (see above)
-- Service descriptions
+`POST /api/booking` takes JSON and appends a line to `bookings.log`. Swap the
+`fs.appendFile` call in `server.js` for email or a CRM when one exists.
+
+### Photo uploads
+
+Photos are read in the browser, sent as data URLs inside the JSON body, and
+written to `uploads/` by the server under a name the server chooses. The client
+filename is never trusted.
+
+Limits, enforced on both sides: up to 5 files, 5MB each, JPG/PNG/WebP only, and
+a 30MB cap on the whole request body.
+
+`uploads/` sits outside `public/`, so photos are **not** reachable over HTTP,
+and it is gitignored so customer photos never reach the repo. If you move the
+site to a host with an ephemeral filesystem, uploads will not survive restarts —
+send them somewhere durable at that point.
+
+## Still to add
+
+Nothing on the site is invented, but two things are simply missing:
+
+- **Phone number and email.** The fabricated ones were removed. The booking
+  form is currently the only way to make contact. `index.html` has a commented
+  block in the booking section showing where to add real details, and the
+  `#i-phone` / `#i-mail` symbols will need adding back to the sprite.
+- **Social links.** Removed rather than left pointing at `#`. There is a comment
+  in the footer showing how to restore them.
+
+Claims the site does make, all of which need to stay true: locally owned,
+insured, serving Southwest Florida, arrives with its own water and power,
+confirms the price before starting, and inspects the vehicle with the customer
+before leaving.
+
+Customer reviews were removed entirely. Add them back only when they are real.
 
 ## Mobile
 

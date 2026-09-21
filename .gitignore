@@ -4,3 +4,6 @@ bookings.log
 *.log
 .env
 .replit_history
+
+# Customer-submitted photos — never commit these
+uploads/

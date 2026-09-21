@@ -176,40 +176,314 @@
   var status = document.getElementById("formStatus");
 
   function showStatus(message, ok) {
+    if (!status) return;
     status.textContent = message;
     status.className = "form-status is-visible " + (ok ? "is-ok" : "is-error");
   }
 
-  // Package buttons preselect the service dropdown.
-  document.addEventListener("click", function (e) {
-    var trigger = e.target.closest("[data-package]");
-    if (!trigger || !form) return;
-    var wanted = trigger.getAttribute("data-package");
-    var select = form.elements.service;
-    if (!select) return;
-    Array.prototype.forEach.call(select.options, function (opt) {
-      if (opt.value === wanted || opt.text === wanted) select.value = opt.value || opt.text;
-    });
-  });
+  /* Seat count only matters when a seat shampoo is requested. */
+  var seatCount = document.getElementById("seatCount");
+  if (form && seatCount) {
+    var seatBox = form.querySelector('input[value="Seat shampoo"]');
+    var syncSeats = function () {
+      seatCount.hidden = !seatBox.checked;
+      if (!seatBox.checked) seatCount.querySelector("input").value = "";
+    };
+    seatBox.addEventListener("change", syncSeats);
+    syncSeats();
+  }
 
+  /* ---------- Photo attachments ---------- */
+  var MAX_FILES = 5;
+  var MAX_BYTES = 5 * 1024 * 1024;
+  var ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+
+  var fileInput = document.getElementById("photos");
+  var previews = document.getElementById("photoPreviews");
+  var dropzone = fileInput ? fileInput.closest(".dropzone") : null;
+  var photos = [];   // { file, dataUrl }
+  var photoError;
+
+  function setPhotoError(msg) {
+    if (!photoError) {
+      photoError = document.createElement("p");
+      photoError.className = "photo-error";
+      photoError.setAttribute("role", "status");
+      previews.insertAdjacentElement("afterend", photoError);
+    }
+    photoError.textContent = msg || "";
+  }
+
+  function renderPhotos() {
+    previews.textContent = "";
+    photos.forEach(function (p, i) {
+      var li = document.createElement("li");
+      var img = document.createElement("img");
+      img.src = p.dataUrl;
+      img.alt = p.file.name;
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "photo-remove";
+      btn.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-close"/></svg>';
+      btn.setAttribute("aria-label", "Remove " + p.file.name);
+      btn.addEventListener("click", function () {
+        photos.splice(i, 1);
+        renderPhotos();
+        setPhotoError("");
+      });
+      li.appendChild(img);
+      li.appendChild(btn);
+      previews.appendChild(li);
+    });
+  }
+
+  function readFile(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(reader.result); };
+      reader.onerror = function () { reject(new Error("read failed")); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function addFiles(fileList) {
+    var incoming = Array.prototype.slice.call(fileList);
+    var problems = [];
+
+    var queue = incoming.filter(function (f) {
+      if (ALLOWED.indexOf(f.type) === -1) { problems.push(f.name + " is not a JPG, PNG or WebP."); return false; }
+      if (f.size > MAX_BYTES) { problems.push(f.name + " is over 5MB."); return false; }
+      return true;
+    });
+
+    if (photos.length + queue.length > MAX_FILES) {
+      queue = queue.slice(0, Math.max(0, MAX_FILES - photos.length));
+      problems.push("Up to " + MAX_FILES + " photos.");
+    }
+
+    Promise.all(queue.map(function (f) {
+      return readFile(f).then(function (dataUrl) { photos.push({ file: f, dataUrl: dataUrl }); });
+    })).then(function () {
+      renderPhotos();
+      setPhotoError(problems.join(" "));
+    }).catch(function () {
+      setPhotoError("One of those images could not be read. Try another.");
+    });
+  }
+
+  if (fileInput && previews) {
+    fileInput.addEventListener("change", function () {
+      addFiles(fileInput.files);
+      fileInput.value = "";   // allow re-picking the same file
+    });
+
+    ["dragenter", "dragover"].forEach(function (evt) {
+      dropzone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        dropzone.classList.add("is-dragging");
+      });
+    });
+    ["dragleave", "drop"].forEach(function (evt) {
+      dropzone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        dropzone.classList.remove("is-dragging");
+      });
+    });
+    dropzone.addEventListener("drop", function (e) {
+      if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+    });
+  }
+
+  /* ---------- Step wizard ---------- */
+  var steps = form ? Array.prototype.slice.call(form.querySelectorAll(".form-step")) : [];
+  var dots = form ? Array.prototype.slice.call(form.querySelectorAll(".step-dot")) : [];
+  var backBtn = document.getElementById("stepBack");
+  var nextBtn = document.getElementById("stepNext");
+  var submitBtn = document.getElementById("stepSubmit");
+  var current = 0;
+  var furthest = 0;
+
+  function fieldOf(input) {
+    return input.closest(".field") || input.parentElement;
+  }
+
+  function clearError(input) {
+    var wrap = fieldOf(input);
+    if (!wrap) return;
+    wrap.classList.remove("has-error");
+    var msg = wrap.querySelector(".field-error");
+    if (msg) msg.remove();
+    input.removeAttribute("aria-invalid");
+  }
+
+  function setError(input, message) {
+    var wrap = fieldOf(input);
+    if (!wrap) return;
+    clearError(input);
+    wrap.classList.add("has-error");
+    input.setAttribute("aria-invalid", "true");
+    var msg = document.createElement("span");
+    msg.className = "field-error";
+    msg.textContent = message;
+    wrap.appendChild(msg);
+  }
+
+  function messageFor(input) {
+    if (input.validity.valueMissing) {
+      return input.type === "date" ? "Pick a date that suits you."
+        : input.type === "time" ? "Pick a rough time."
+        : "This one's needed.";
+    }
+    if (input.validity.typeMismatch && input.type === "email") return "That email doesn't look right.";
+    return "Please check this.";
+  }
+
+  /* Validate one step; returns true when it can be left.
+     focusFirst is skipped when checking a step that is not on screen. */
+  function validateStep(index, focusFirst) {
+    var step = steps[index];
+    var inputs = Array.prototype.slice.call(
+      step.querySelectorAll("input, select, textarea")
+    ).filter(function (el) { return el.type !== "file" && !el.disabled; });
+
+    var firstBad = null;
+    inputs.forEach(function (input) {
+      // Skip fields inside a hidden wrapper (e.g. the seat count), but not
+      // the step itself, which is hidden whenever it is not the current one.
+      var hiddenWrap = input.closest("[hidden]");
+      if (hiddenWrap && hiddenWrap !== step) { clearError(input); return; }
+
+      if (input.checkValidity()) {
+        clearError(input);
+      } else {
+        setError(input, messageFor(input));
+        if (!firstBad) firstBad = input;
+      }
+    });
+
+    if (firstBad) {
+      if (focusFirst !== false) firstBad.focus();
+      return false;
+    }
+    return true;
+  }
+
+  function paintDots() {
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle("is-current", i === current);
+      dot.classList.toggle("is-done", i < furthest && i !== current);
+      var btn = dot.querySelector(".step-dot-btn");
+      if (i === current) {
+        dot.setAttribute("aria-current", "step");
+      } else {
+        dot.removeAttribute("aria-current");
+      }
+      // Only completed steps are navigable.
+      btn.disabled = i > furthest;
+    });
+  }
+
+  function goTo(index, focusTitle) {
+    current = Math.max(0, Math.min(steps.length - 1, index));
+    furthest = Math.max(furthest, current);
+
+    steps.forEach(function (step, i) {
+      var on = i === current;
+      step.hidden = !on;
+      step.classList.toggle("is-active", on);
+      if (on) {
+        step.classList.remove("is-entering");
+        void step.offsetWidth;          // restart the enter animation
+        step.classList.add("is-entering");
+      }
+    });
+
+    backBtn.hidden = current === 0;
+    nextBtn.hidden = current === steps.length - 1;
+    submitBtn.hidden = current !== steps.length - 1;
+
+    paintDots();
+
+    if (focusTitle) {
+      var title = steps[current].querySelector(".form-step-title");
+      if (title) title.focus({ preventScroll: true });
+    }
+  }
+
+  if (form && steps.length) {
+    nextBtn.addEventListener("click", function () {
+      if (!validateStep(current)) return;
+      goTo(current + 1, true);
+    });
+
+    backBtn.addEventListener("click", function () { goTo(current - 1, true); });
+
+    dots.forEach(function (dot, i) {
+      dot.querySelector(".step-dot-btn").addEventListener("click", function () {
+        if (i > furthest) return;
+        // Moving forward through the bar still has to pass validation.
+        if (i > current && !validateStep(current)) return;
+        goTo(i, true);
+      });
+    });
+
+    // Clear an error as soon as the person fixes it.
+    form.addEventListener("input", function (e) {
+      var el = e.target;
+      if (el.matches("input, select, textarea") && fieldOf(el) &&
+          fieldOf(el).classList.contains("has-error") && el.checkValidity()) {
+        clearError(el);
+      }
+    });
+
+    // Enter should advance rather than submit while steps remain.
+    form.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      if (e.target.tagName === "TEXTAREA") return;
+      if (current < steps.length - 1) {
+        e.preventDefault();
+        nextBtn.click();
+      }
+    });
+
+    goTo(0, false);
+  }
+
+  /* ---------- Submit ---------- */
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      if (!form.checkValidity()) {
-        showStatus("Please fill in your name, phone, email and package.", false);
-        var firstInvalid = form.querySelector(":invalid");
-        if (firstInvalid) firstInvalid.focus();
-        return;
+      // Re-check every step, not just the visible one.
+      for (var i = 0; i < steps.length; i++) {
+        if (!validateStep(i, false)) {
+          goTo(i, false);
+          validateStep(i, true);   // now on screen, so focus can land
+          showStatus("Something's missing on this step. Take a look above.", false);
+          return;
+        }
       }
 
-      var submitBtn = form.querySelector('button[type="submit"]');
       var original = submitBtn.innerHTML;
       submitBtn.disabled = true;
-      submitBtn.textContent = "Sending…";
+      submitBtn.textContent = "Sending\u2026";
 
-      var payload = {};
-      new FormData(form).forEach(function (value, key) { payload[key] = value; });
+      var fd = new FormData(form);
+      var payload = {
+        name: fd.get("name"),
+        phone: fd.get("phone"),
+        email: fd.get("email"),
+        vehicle: fd.get("vehicle"),
+        address: fd.get("address"),
+        date: fd.get("date"),
+        time: fd.get("time"),
+        seats: fd.get("seats") || "",
+        notes: fd.get("notes") || "",
+        addons: fd.getAll("addons"),
+        photos: photos.map(function (p) {
+          return { name: p.file.name, type: p.file.type, data: p.dataUrl };
+        })
+      };
 
       fetch("/api/booking", {
         method: "POST",
@@ -221,9 +495,17 @@
           if (!r.ok) throw new Error(r.data && r.data.error ? r.data.error : "Request failed");
           showStatus(r.data.message || "Thanks! We'll be in touch shortly to confirm.", true);
           form.reset();
+          photos = [];
+          renderPhotos();
+          setPhotoError("");
+          if (seatCount) seatCount.hidden = true;
+          furthest = 0;
+          goTo(0, false);
         })
-        .catch(function () {
-          showStatus("Something went wrong. Please call (555) 012-7278 and we'll get you booked.", false);
+        .catch(function (err) {
+          showStatus(err.message && err.message !== "Request failed"
+            ? err.message
+            : "Something went wrong sending that. Please try again in a moment.", false);
         })
         .finally(function () {
           submitBtn.disabled = false;
