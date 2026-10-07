@@ -5,6 +5,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const admin = require("./lib/admin");
 
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
@@ -190,7 +191,13 @@ function handleBooking(req, res) {
     booking.ref = ref;
     booking.photos = savePhotos(data.photos, ref);
 
-    // Append to a local log. Swap this for email/CRM when one is connected.
+    // Land the request in the admin portal as a lead, then append to the
+    // plain-text log as a belt-and-braces record.
+    try {
+      admin.recordBooking(booking);
+    } catch (err) {
+      console.error("Could not record booking in the portal:", err.message);
+    }
     fs.appendFile(BOOKINGS_FILE, JSON.stringify(booking) + "\n", (err) => {
       if (err) console.error("Could not record booking:", err.message);
       console.log(
@@ -207,9 +214,18 @@ function handleBooking(req, res) {
 }
 
 const server = http.createServer((req, res) => {
-  if (req.url.split("?")[0] === "/api/booking") {
+  const urlPath = req.url.split("?")[0];
+
+  if (urlPath === "/api/booking") {
     if (req.method !== "POST") return sendJson(res, 405, { error: "Method not allowed" });
     return handleBooking(req, res);
+  }
+
+  if (urlPath.startsWith("/api/admin")) {
+    return admin.handle(req, res, urlPath).catch((err) => {
+      console.error("Admin API error:", err);
+      if (!res.headersSent) sendJson(res, 500, { error: "Something went wrong" });
+    });
   }
 
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -219,6 +235,9 @@ const server = http.createServer((req, res) => {
   serveStatic(req, res);
 });
 
+admin.importBookingLog();
+
 server.listen(PORT, HOST, () => {
   console.log(`Coral Auto Spa running at http://${HOST}:${PORT}`);
+  console.log(`Admin portal at http://${HOST}:${PORT}/admin`);
 });

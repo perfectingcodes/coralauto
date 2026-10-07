@@ -21,6 +21,82 @@ Then open http://localhost:3000. Use `npm run dev` for auto-restart while editin
 
 The server binds `0.0.0.0` and reads `process.env.PORT`, which is what Replit expects.
 
+## Admin portal
+
+`/admin` is the back office: job tracker, CRM, calendar, social media planner,
+business directory, finances, inventory, tasks and settings. Same zero-dependency
+stack as the site, so it deploys with it.
+
+**Sign in.** Set `ADMIN_PASSWORD` in the environment (Replit: the Secrets tab)
+and restart. Without it the server uses the development password `coral-admin`
+and prints a warning on boot and a banner in the portal. Sessions are HttpOnly
+cookies that last 30 days; ten wrong passwords from one IP locks login for
+15 minutes.
+
+**Where the data lives.** One JSON file, `data/db.json`, gitignored. Writes are
+atomic (temp file + rename) and coalesced. On a host with an ephemeral
+filesystem the file resets on redeploy, so use *Settings → Download backup*
+before deploying and *Restore from file* after, or move `lib/db.js` to a real
+database when the time comes. The API surface it exposes is small on purpose.
+
+**Website bookings become leads.** `POST /api/booking` still appends to
+`bookings.log`, and now also matches or creates a customer (by email or phone)
+and creates a job in the **New lead** column. On boot the server imports any
+lines in `bookings.log` it has not seen, so nothing from before the portal
+existed is lost.
+
+### Sections
+
+| Section | What it does |
+| --- | --- |
+| Dashboard | Revenue this month vs last, jobs in the next 7 days, open leads, money owed, this week's schedule, tasks, planned posts, low stock, activity feed |
+| Leads | Every new request with call / text / email links, photos, and one-click **Quote sent**, **Book it** (date, time, agreed price) or decline. Quotes awaiting the customer are listed underneath |
+| Jobs | Pipeline board (drag and drop, or the arrows) through New → Quoted → Scheduled → In progress → Completed → Paid, plus a filterable list. Each job has a detail page, status steps, **Mark paid** (amount, method, date) and a printable invoice/receipt |
+| Calendar | Month view of jobs, social posts and task due dates. Click a day to add any of them. Agenda of the next two weeks below |
+| Customers | Lifetime value, job history, vehicles, tags, notes, follow-up tasks. Created automatically from bookings; renames flow through to their jobs |
+| Tasks | Open / done, grouped by overdue, today, this week, later. Tasks can hang off a job or a customer and show on those pages too |
+| Social media | Scheduled / Ideas / Posted, by platform, with content-pillar balance for the month. A job page can spawn a before-and-after post. **Copy caption** puts caption + hashtags on the clipboard |
+| Directory | Suppliers, vendors, referral partners, dealerships, property managers, fleet accounts, with contact details, rating, referral terms and total spend |
+| Finance | Revenue collected, expenses, profit and margin by month; six-month trend; unpaid jobs; payments by method; spend by category; expense log |
+| Inventory | Stock levels with − / + buttons, reorder thresholds, supplier link, stock value. Low items float to the top and appear on the dashboard |
+| Settings | Business profile (goes on invoices), team members (assignable on jobs and tasks), services and prices, add-ons, the drop-down lists, backup and restore |
+
+### API
+
+Everything under `/api/admin` needs the session cookie except `POST /login`.
+
+```
+POST   /api/admin/login            { password }
+POST   /api/admin/logout
+GET    /api/admin/me
+GET    /api/admin/bootstrap        every collection + settings in one payload
+GET    /api/admin/export           same, as a download
+POST   /api/admin/import           replace all business data from a backup
+GET|PUT /api/admin/settings
+GET    /api/admin/uploads/:file    customer photos (not reachable publicly)
+GET|POST        /api/admin/:collection
+GET|PATCH|DELETE /api/admin/:collection/:id
+POST   /api/admin/jobs/:id/status  { status }
+```
+
+Collections: `customers`, `jobs`, `directory`, `posts`, `expenses`, `inventory`,
+`tasks`, and read-only `activity`.
+
+### Code
+
+```
+lib/db.js               JSON store: list/get/insert/update/remove, settings,
+                        activity log, snapshot/restore
+lib/admin.js            sessions, login throttle, lead intake, the routes above
+public/admin/index.html shell + icon sprite + login + modal
+public/admin/admin.css  portal styles, shares the site's brand tokens
+public/admin/admin.js   the app: one state object, hash router, a schema-driven
+                        form builder (FIELDS) and one render function per section
+```
+
+To add a field to any record type, add it to `FIELDS` in `admin.js`; the
+create/edit dialogs, validation and save are generated from that list.
+
 ## Layout
 
 ```
@@ -34,8 +110,11 @@ public/
                         scroll reveal, FAQ accordion, three-step booking
                         wizard, photo attachments, booking submit
   assets/img/           brand badges and photography
-server.js               static file server + POST /api/booking
-uploads/                customer-submitted photos (gitignored, not served)
+server.js               static file server + POST /api/booking + /api/admin
+lib/                    admin portal: JSON store and API (see above)
+data/                   db.json for the portal (gitignored)
+uploads/                customer-submitted photos (gitignored, served only to
+                        signed-in admins)
 scripts/
   process_assets.py     logo knockout + hero crops
   add_guarantee.py      guarantee badge
@@ -162,8 +241,8 @@ Each step validates before it will advance, with inline messages under the
 offending field. Completed steps can be revisited from the numbered bar. The
 final submit re-checks every step, not just the visible one.
 
-`POST /api/booking` takes JSON and appends a line to `bookings.log`. Swap the
-`fs.appendFile` call in `server.js` for email or a CRM when one exists.
+`POST /api/booking` takes JSON, creates a lead in the admin portal (see above)
+and appends a line to `bookings.log`.
 
 ### Photo uploads
 

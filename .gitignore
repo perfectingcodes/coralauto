@@ -7,3 +7,6 @@ bookings.log
 
 # Customer-submitted photos — never commit these
 uploads/
+
+# Admin portal database — business data, never commit
+data/
