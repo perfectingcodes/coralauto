@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coral Auto Spa — Mobile Detailing in Southwest Florida</title>
-<meta name="description" content="Locally owned, insured mobile auto detailing in Southwest Florida. A full interior and exterior detail from $100. We come to you with our own water and power.">
+<title data-i18n="meta.title">Coral Auto Spa — Mobile Detailing in Southwest Florida</title>
+<meta name="description" data-i18n-attr="content:meta.description" content="Locally owned, insured mobile auto detailing in Southwest Florida.">
 <meta name="theme-color" content="#061224">
 <link rel="icon" href="/assets/img/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/favicon.png">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Coral Auto Spa — Mobile Detailing in Southwest Florida">
-<meta property="og:description" content="A full interior and exterior detail from $100. Wherever you are becomes our shop.">
+<meta property="og:title" data-i18n-attr="content:meta.title" content="Coral Auto Spa">
+<meta property="og:description" data-i18n-attr="content:meta.description" content="">
 <meta property="og:image" content="/assets/img/hero.webp">
 <meta name="twitter:card" content="summary_large_image">
 
@@ -19,24 +19,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,100..125,400..900;1,100..125,400..900&family=Inter:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="/assets/img/hero.webp">
-<link rel="stylesheet" href="/assets/css/styles.css?v=32">
+<link rel="stylesheet" href="/assets/css/styles.css?v=43">
+
+<!--CORAL_BOOT-->
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "AutoDetailing",
   "name": "Coral Auto Spa",
-  "description": "Locally owned, insured mobile auto detailing serving Southwest Florida. Full interior and exterior detailing at your home or workplace.",
+  "description": "Locally owned, insured mobile auto detailing serving Southwest Florida.",
   "image": "/assets/img/logo.png",
   "areaServed": "Southwest Florida",
   "priceRange": "$",
-  "makesOffer": {
-    "@type": "Offer",
-    "name": "Full Interior & Exterior Detail",
-    "price": "100",
-    "priceCurrency": "USD",
-    "description": "Complete exterior hand wash and full interior clean. Starting price; final price depends on vehicle size and condition."
-  }
+  "knowsLanguage": ["en", "es"]
 }
 </script>
 </head>
@@ -62,6 +58,11 @@
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6.4 9.6l5.6 5.4 5.6-5.4"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7.5h16M4 12h16M4 16.5h11"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.4 6.4l11.2 11.2M17.6 6.4L6.4 17.6"/></symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/><circle cx="12" cy="12" r="3.9"/><circle cx="17.1" cy="6.9" r="1.1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M21.4 16.9v2.8a1.9 1.9 0 01-2.1 1.9 18.9 18.9 0 01-8.2-2.9 18.6 18.6 0 01-5.7-5.7 18.9 18.9 0 01-2.9-8.3A1.9 1.9 0 014.4 2.6h2.8a1.9 1.9 0 011.9 1.6c.1 1 .3 1.8.7 2.7a1.9 1.9 0 01-.4 2L8.2 10.1a15.3 15.3 0 005.7 5.7l1.2-1.2a1.9 1.9 0 012-.4c.9.3 1.7.6 2.7.7a1.9 1.9 0 011.6 2z"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 11.6a8.1 8.1 0 01-8.7 8.1 9 9 0 01-3.3-.8L3.2 20.8l1.9-5.6a8.4 8.4 0 01-.9-3.6A8.1 8.1 0 0112.4 3h.5a8.1 8.1 0 018.1 8.1z"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M3.6 10.2a8.4 8.4 0 0114.3-4.4l2.5 2.4"/><path d="M20.4 3.8v4.6h-4.6"/><path d="M20.4 13.8a8.4 8.4 0 01-14.3 4.4l-2.5-2.4"/><path d="M3.6 20.2v-4.6h4.6"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4"/><path d="M12 2.8a14 14 0 010 18.4 14 14 0 010-18.4z"/></symbol>
   </defs>
 </svg>
 
@@ -69,29 +70,39 @@
 <header class="site-header" id="siteHeader">
   <div class="header-shell">
     <div class="header-inner">
-      <a class="brand" href="#home" aria-label="Coral Auto Spa home">
+      <a class="brand" href="#home" aria-label="Coral Auto Spa">
         <img src="/assets/img/logo.webp" alt="Coral Auto Spa" width="720" height="632" fetchpriority="high">
       </a>
 
       <nav class="nav-desktop" aria-label="Primary">
         <ul class="nav-list" id="navList">
           <span class="nav-pill" aria-hidden="true"></span>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#service">The Detail</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#gallery">Gallery</a></li>
-          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#home" data-i18n="nav.home">Home</a></li>
+          <li><a href="#service" data-i18n="nav.detail">The Detail</a></li>
+          <li><a href="#pricing" data-i18n="nav.pricing">Pricing</a></li>
+          <li><a href="#about" data-i18n="nav.about">About</a></li>
+          <li><a href="#gallery" data-i18n="nav.gallery">Gallery</a></li>
+          <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
         </ul>
       </nav>
 
       <div class="header-actions">
-        <a class="btn btn-primary btn-sm" href="#book">
-          <span>Book Now</span>
+        <!-- Language switch, top corner, on every screen size -->
+        <div class="lang-switch" role="group" data-i18n-attr="aria-label:lang.switch" aria-label="Switch language">
+          <button type="button" class="lang-btn is-on" data-lang="en" lang="en">
+            <span class="lang-flag" aria-hidden="true">🇺🇸</span><span class="lang-word">English</span>
+          </button>
+          <button type="button" class="lang-btn" data-lang="es" lang="es">
+            <span class="lang-flag" aria-hidden="true">🇪🇸</span><span class="lang-word">Español</span>
+          </button>
+        </div>
+
+        <a class="btn btn-primary btn-sm" href="#book" data-choice="membership">
+          <span data-i18n="nav.bookNow">Book Now</span>
           <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
         </a>
         <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="mobileMenu">
-          <span class="visually-hidden">Open menu</span>
+          <span class="visually-hidden" data-i18n="nav.menuOpen">Open menu</span>
           <svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg>
         </button>
       </div>
@@ -100,81 +111,104 @@
 </header>
 
 <!-- ============ MOBILE MENU ============ -->
-<div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Site menu" aria-hidden="true">
+<div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Menu" aria-hidden="true">
   <div class="mobile-menu-top">
     <img src="/assets/img/logo.webp" alt="" aria-hidden="true" width="720" height="632">
     <button class="nav-toggle nav-close" id="navClose">
-      <span class="visually-hidden">Close menu</span>
+      <span class="visually-hidden" data-i18n="nav.menuClose">Close menu</span>
       <svg class="ic" aria-hidden="true"><use href="#i-close"/></svg>
     </button>
   </div>
 
   <nav class="mobile-nav" aria-label="Mobile">
-    <a href="#home"><span class="m-num">01</span>Home</a>
-    <a href="#service"><span class="m-num">02</span>The Detail</a>
-    <a href="#pricing"><span class="m-num">03</span>Pricing</a>
-    <a href="#about"><span class="m-num">04</span>About</a>
-    <a href="#gallery"><span class="m-num">05</span>Gallery</a>
-    <a href="#faq"><span class="m-num">06</span>FAQ</a>
-    <a href="#book"><span class="m-num">07</span>Book</a>
+    <a href="#home"><span class="m-num">01</span><span data-i18n="nav.home">Home</span></a>
+    <a href="#service"><span class="m-num">02</span><span data-i18n="nav.detail">The Detail</span></a>
+    <a href="#pricing"><span class="m-num">03</span><span data-i18n="nav.pricing">Pricing</span></a>
+    <a href="#about"><span class="m-num">04</span><span data-i18n="nav.about">About</span></a>
+    <a href="#gallery"><span class="m-num">05</span><span data-i18n="nav.gallery">Gallery</span></a>
+    <a href="#faq"><span class="m-num">06</span><span data-i18n="nav.faq">FAQ</span></a>
+    <a href="#book"><span class="m-num">07</span><span data-i18n="nav.book">Book</span></a>
   </nav>
 
   <div class="mobile-menu-foot">
-    <a class="btn btn-primary" href="#book">
-      <span>Book Now</span>
+    <a class="btn btn-primary" href="#book" data-choice="membership">
+      <span data-i18n="member.cta">Join &amp; Book</span>
       <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
     </a>
-    <p class="mobile-tagline">Wherever you are becomes our shop.</p>
+    <div class="mobile-menu-contact" data-biz-contact hidden>
+      <a class="mm-contact" data-biz-tel href="#"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span data-i18n="contact.call">Call</span></a>
+      <a class="mm-contact" data-biz-sms href="#"><svg class="ic" aria-hidden="true"><use href="#i-message"/></svg><span data-i18n="contact.text">Text</span></a>
+      <a class="mm-contact" data-biz-instagram href="#"><svg class="ic" aria-hidden="true"><use href="#i-instagram"/></svg><span data-i18n="contact.instagram">Instagram</span></a>
+    </div>
+    <p class="mobile-tagline" data-i18n="contact.spanish">Hablamos Español</p>
   </div>
 </div>
 
 <main id="main">
 
-<!-- ============ HERO ============ -->
+<!-- ============ HERO + MEMBERSHIP ============ -->
 <section class="hero" id="home">
   <div class="hero-media">
     <img src="/assets/img/hero.webp" srcset="/assets/img/hero-sm.webp 760w, /assets/img/hero.webp 1344w" sizes="100vw" alt="A Coral Auto Spa detailer rinsing a foam-covered truck at sunset" width="1344" height="752" fetchpriority="high">
   </div>
 
-  <div class="wrap">
+  <div class="wrap hero-grid">
     <div class="hero-content">
-      <p class="eyebrow eyebrow-light">Mobile Detailing &middot; Southwest Florida</p>
+      <p class="eyebrow eyebrow-light" data-i18n="hero.eyebrow">Mobile Detailing · Southwest Florida</p>
       <h1 class="display">
-        <span>Detailing</span>
-        <span>That Hits</span>
-        <span class="accent">Different</span>
+        <span data-i18n="hero.title1">Detailing</span>
+        <span data-i18n="hero.title2">That Hits</span>
+        <span class="accent" data-i18n="hero.title3">Different</span>
       </h1>
-      <p class="hero-sub">Wherever you are becomes our shop.<br>A full interior and exterior detail, from $100.</p>
+      <p class="hero-sub" data-i18n-html="hero.sub">Wherever you are becomes our shop.</p>
 
       <ul class="hero-badges">
         <li class="badge">
           <span class="badge-ic"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg></span>
-          <span>Locally Owned &amp; Insured</span>
+          <span data-i18n="hero.badge1">Locally Owned &amp; Insured</span>
         </li>
         <li class="badge">
           <span class="badge-ic"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg></span>
-          <span>We Bring Water &amp; Power</span>
+          <span data-i18n="hero.badge2">We Bring Water &amp; Power</span>
         </li>
         <li class="badge">
           <span class="badge-ic"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg></span>
-          <span>We Come To You</span>
+          <span data-i18n="hero.badge3">We Come To You</span>
         </li>
       </ul>
-
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="#book">
-          <span>Book Now</span>
-          <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
-        </a>
-        <a class="btn btn-ghost" href="#service">See What's Included</a>
-      </div>
     </div>
+
+    <!-- The main offer. Beside the headline on desktop, straight after it on mobile. -->
+    <aside class="member-card" aria-labelledby="memberKicker">
+      <span class="member-badge" data-i18n="member.badge">Most Popular</span>
+
+      <p class="member-kicker" id="memberKicker" data-i18n="member.kicker">Keep Your Car Clean Every Month</p>
+
+      <p class="member-figure">
+        <span class="member-amount" data-i18n="member.price">$100</span>
+        <span class="member-per" data-i18n="member.per">/month</span>
+      </p>
+
+      <p class="member-desc" data-i18n-html="member.desc">One full interior &amp; exterior detail each month. We come to you.</p>
+
+      <ul class="member-points">
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="member.save">Save $20 per visit.</span></li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="member.firstVisit">Member pricing starts with your first visit.</span></li>
+      </ul>
+
+      <a class="btn btn-primary btn-block member-cta" href="#book" data-choice="membership">
+        <span data-i18n-html="member.cta">Join &amp; Book For $100</span>
+        <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+      </a>
+
+      <a class="member-alt" href="#book" data-choice="combo" data-i18n="member.secondary">Book A One-Time Detail — From $120</a>
+
+      <p class="member-terms" data-i18n="member.terms">Month to month. One vehicle, one visit a month. Cancel any time before your next charge.</p>
+    </aside>
   </div>
 
-  <p class="script hero-script">Clean cars. Happier days.</p>
-
   <div class="scroll-cue" aria-hidden="true">
-    <span>Scroll</span>
+    <span data-i18n="hero.scroll">Scroll</span>
     <svg class="ic" aria-hidden="true"><use href="#i-chevron"/></svg>
   </div>
 </section>
@@ -184,11 +218,12 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">The Detail</p>
-        <h2 class="display">One Service.<br><span class="accent-ink">Done Properly.</span></h2>
-        <p class="lead">No confusing tiers and no upselling. Every booking is the same thorough interior and exterior detail, start to finish.</p>
+        <p class="eyebrow" data-i18n="service.eyebrow">The Detail</p>
+        <h2 class="display"><span data-i18n="service.title1">One Service.</span><br><span class="accent-ink" data-i18n="service.title2">Done Properly.</span></h2>
+        <p class="lead" data-i18n="service.lead">One complete package. Optional extras only when you choose them.</p>
       </div>
-      <a class="link-arrow" href="#pricing">See The Price
+      <a class="link-arrow" href="#pricing">
+        <span data-i18n="service.seePrice">See The Price</span>
         <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
       </a>
     </div>
@@ -197,37 +232,43 @@
       <article class="detail-card reveal">
         <div class="detail-media">
           <img src="/assets/img/card-wash.webp" srcset="/assets/img/card-wash-sm.webp 700w, /assets/img/card-wash.webp 900w" sizes="(max-width: 860px) 92vw, 46vw" alt="Vehicle covered in cleaning foam during an exterior hand wash" loading="lazy" width="900" height="675">
-          <h3 class="detail-title">Exterior</h3>
+          <h3 class="detail-title" data-i18n="service.exterior">Exterior</h3>
         </div>
         <ul class="detail-list">
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Complete hand wash and dry</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Wheels, tires and wheel wells</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Exterior windows</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Exterior trim</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Tire dressing</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="exterior.wash">Complete hand wash and dry</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="exterior.wheels">Wheels, tires and wheel wells</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="exterior.windows">Exterior windows</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="exterior.trim">Exterior trim</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="exterior.tires">Tire dressing</span></li>
+          <li class="is-new"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="exterior.sprayWax">Spray-wax finish</span></li>
         </ul>
       </article>
 
       <article class="detail-card reveal">
         <div class="detail-media">
           <img src="/assets/img/card-interior.webp" srcset="/assets/img/card-interior-sm.webp 700w, /assets/img/card-interior.webp 900w" sizes="(max-width: 860px) 92vw, 46vw" alt="Hand wiping a car steering wheel with a microfiber cloth" loading="lazy" width="900" height="675">
-          <h3 class="detail-title">Interior</h3>
+          <h3 class="detail-title" data-i18n="service.interior">Interior</h3>
         </div>
         <ul class="detail-list">
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Trash removed and vehicle blown out</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Deep vacuum: seats, carpets, mats and trunk</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Dashboard, center console and cupholders</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Vents, door panels and door jambs</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Interior windows</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Detailing brushes through the tight spots</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="interior.trash">Trash removed and vehicle blown out</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="interior.vacuum">Deep vacuum: seats, carpets, mats and trunk</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="interior.dash">Dashboard, center console and cupholders</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="interior.vents">Vents, door panels and door jambs</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="interior.glass">Interior windows</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="interior.brushes">Detailing brushes through the tight spots</span></li>
         </ul>
       </article>
     </div>
 
-    <p class="detail-note reveal">
+    <!-- Said plainly, so "deep clean" is never mistaken for shampooing. -->
+    <div class="detail-note reveal">
       <svg class="ic" aria-hidden="true"><use href="#i-sparkle"/></svg>
-      <span>Shampooing, stain extraction and heavy steam cleaning sit outside the base detail. They take real extra labor, so they are priced as add-ons below.</span>
-    </p>
+      <div>
+        <h3 data-i18n="service.noteTitle">What a thorough clean does not mean</h3>
+        <p data-i18n="service.note">Seat shampooing, carpet extraction and stain-removal treatments are separate add-ons.</p>
+        <p class="detail-subnote" data-i18n="service.waxNote">The spray wax is a spray-wax finish for gloss and protection.</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -236,72 +277,128 @@
   <div class="wrap">
     <div class="section-head section-head-center reveal">
       <div>
-        <p class="eyebrow">Simple Pricing</p>
-        <h2 class="display">Everything Above.<br><span class="accent">From $100.</span></h2>
-        <p class="lead pricing-lead">The quality and attention of a far more expensive detail, at a price that makes sense to book again.</p>
+        <p class="eyebrow" data-i18n="pricing.eyebrow">Simple Pricing</p>
+        <h2 class="display"><span data-i18n="pricing.title1">Two Ways</span> <span class="accent" data-i18n="pricing.title2">To Book.</span></h2>
+        <p class="lead pricing-lead" data-i18n="pricing.lead">The same detail either way.</p>
       </div>
     </div>
 
-    <div class="price-layout">
+    <div class="plan-grid">
 
-      <article class="price-card reveal">
-        <div class="price-badge">
-          <img src="/assets/img/logo.webp" alt="Coral Auto Spa" loading="lazy" width="720" height="632">
+      <!-- The offer we lead with -->
+      <article class="plan plan-member reveal">
+        <span class="plan-flag" data-i18n="member.badge">Most Popular</span>
+        <div class="plan-head">
+          <span class="plan-ic"><svg class="ic" aria-hidden="true"><use href="#i-repeat"/></svg></span>
+          <div>
+            <h3 class="plan-name" data-i18n="pricing.memberName">Monthly Membership</h3>
+            <p class="plan-tag" data-i18n="pricing.memberTag">The one we would pick.</p>
+          </div>
         </div>
-        <h3 class="display price-name">Full Interior<br>&amp; Exterior Detail</h3>
-        <p class="price-figure"><span class="price-from">Starting at</span><span class="price-amount">$100</span></p>
-        <ul class="price-points">
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Everything on the exterior and interior lists</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>We arrive with our own water and power</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Exact price agreed before we start</span></li>
+        <p class="plan-figure">
+          <span class="plan-amount" data-i18n="member.price">$100</span>
+          <span class="plan-per" data-i18n="pricing.memberPer">per month</span>
+        </p>
+        <ul class="plan-points">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n-html="pricing.memberPoint1">One full detail every month</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="pricing.memberPoint2">Covers one enrolled vehicle</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="pricing.memberPoint3">Same base service, spray wax included</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="pricing.memberPoint4">Member pricing from your first visit</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="pricing.memberPoint5">Month to month, cancel before your next charge</span></li>
         </ul>
-        <a class="btn btn-primary btn-block" href="#book">
-          <span>Book This Detail</span>
+        <a class="btn btn-primary btn-block" href="#book" data-choice="membership">
+          <span data-i18n="pricing.memberCta">Join &amp; Book</span>
           <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
         </a>
       </article>
 
-      <div class="addons reveal">
-        <h3 class="addons-head">
-          <svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg>
-          <span>Add-Ons</span>
-        </h3>
-        <p class="addons-intro">Only for work that takes genuine extra labor. Nothing here is automatic.</p>
-
-        <ul class="addon-list">
-          <li>
-            <div><h4>Seat shampoo &amp; stain removal</h4><p>Shampooed and extracted, seat by seat.</p></div>
-            <span class="addon-price">$15 <small>/ seat</small></span>
-          </li>
-          <li>
-            <div><h4>Carpet shampoo</h4><p>Carpets and mats shampooed and extracted.</p></div>
-            <span class="addon-price addon-quote">Quoted</span>
-          </li>
-          <li>
-            <div><h4>Heavy stain removal</h4><p>Set-in stains that need more than a vacuum.</p></div>
-            <span class="addon-price addon-quote">Quoted</span>
-          </li>
-          <li>
-            <div><h4>Excessive pet hair</h4><p>Embedded hair through carpet and upholstery.</p></div>
-            <span class="addon-price addon-quote">Quoted</span>
-          </li>
-          <li>
-            <div><h4>Excessive sand</h4><p>Beach days add up. We'll get it all out.</p></div>
-            <span class="addon-price addon-quote">Quoted</span>
-          </li>
-          <li>
-            <div><h4>Odor treatment</h4><p>For smoke, damp or lingering smells.</p></div>
-            <span class="addon-price addon-quote">Quoted</span>
-          </li>
-          <li>
-            <div><h4>Extremely dirty vehicle</h4><p>When the job is well beyond a normal detail.</p></div>
-            <span class="addon-price addon-quote">Quoted</span>
-          </li>
+      <!-- Same detail, no commitment -->
+      <article class="plan reveal">
+        <div class="plan-head">
+          <span class="plan-ic"><svg class="ic" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
+          <div>
+            <h3 class="plan-name" data-i18n="pricing.oneTimeName">One-Time Detail</h3>
+            <p class="plan-tag" data-i18n="pricing.oneTimeTag">No commitment.</p>
+          </div>
+        </div>
+        <p class="plan-figure">
+          <span class="plan-from" data-i18n="pricing.oneTimeFrom">Starting at</span>
+          <span class="plan-amount plan-amount-alt">$120</span>
+        </p>
+        <ul class="plan-points">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n-html="pricing.oneTimePoint1">The full interior &amp; exterior detail</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="pricing.oneTimePoint2">Spray wax included</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="pricing.oneTimePoint3">Book whenever it suits you</span></li>
         </ul>
+        <a class="btn btn-outline btn-block" href="#book" data-choice="combo">
+          <span data-i18n="pricing.oneTimeCta">Book A One-Time Detail</span>
+          <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+        </a>
+      </article>
+    </div>
 
-        <p class="addons-note">The final price also depends on the size and condition of the vehicle. Whatever it comes to, we confirm it with you before any work begins.</p>
+    <!-- Half the vehicle, same work. Secondary on purpose. -->
+    <div class="halves reveal">
+      <div class="halves-copy">
+        <h3 data-i18n="pricing.halfTitle">Only need one half?</h3>
+        <p data-i18n="pricing.halfLead">Same work, half the vehicle. Booked on its own.</p>
       </div>
+      <div class="halves-options">
+        <a class="half" href="#book" data-choice="interiorOnly">
+          <span class="half-name" data-i18n="pricing.interiorOnly">Interior only</span>
+          <span class="half-price">$80</span>
+        </a>
+        <a class="half" href="#book" data-choice="exteriorOnly">
+          <span class="half-name" data-i18n="pricing.exteriorOnly">Exterior only</span>
+          <span class="half-price">$65</span>
+        </a>
+      </div>
+      <p class="halves-note" data-i18n="pricing.halfNote">Booked separately those come to $145.</p>
+    </div>
 
+    <div class="addons reveal">
+      <h3 class="addons-head">
+        <svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg>
+        <span data-i18n="addons.head">Add-Ons</span>
+      </h3>
+      <p class="addons-intro" data-i18n="addons.intro">Only for work that takes genuine extra labor.</p>
+
+      <ul class="addon-list">
+        <li>
+          <div><h4 data-i18n-html="addon.seatShampoo">Seat shampoo</h4><p data-i18n="addon.seatShampoo.desc">Shampooed and extracted, seat by seat.</p></div>
+          <span class="addon-price">$15 <small data-i18n="addons.perSeat">/ seat</small></span>
+        </li>
+        <li>
+          <div><h4 data-i18n-html="addon.carpetShampoo">Carpet shampoo</h4><p data-i18n="addon.carpetShampoo.desc">Carpets and mats shampooed and extracted.</p></div>
+          <span class="addon-price addon-quote" data-i18n="addons.quoted">Quoted</span>
+        </li>
+        <li>
+          <div><h4 data-i18n="addon.stainRemoval">Stain-removal treatment</h4><p data-i18n="addon.stainRemoval.desc">Set-in stains that need more than a vacuum.</p></div>
+          <span class="addon-price addon-quote" data-i18n="addons.quoted">Quoted</span>
+        </li>
+        <li class="addon-featured">
+          <div><h4 data-i18n="addon.clayBar">Clay bar treatment</h4><p data-i18n="addon.clayBar.desc">Lifts bonded contaminants that washing leaves behind.</p></div>
+          <span class="addon-price addon-quote" data-i18n="addons.quoted">Quoted</span>
+        </li>
+        <li>
+          <div><h4 data-i18n="addon.petHair">Excessive pet hair</h4><p data-i18n="addon.petHair.desc">Embedded hair through carpet and upholstery.</p></div>
+          <span class="addon-price addon-quote" data-i18n="addons.quoted">Quoted</span>
+        </li>
+        <li>
+          <div><h4 data-i18n="addon.sand">Excessive sand</h4><p data-i18n="addon.sand.desc">Beach days add up.</p></div>
+          <span class="addon-price addon-quote" data-i18n="addons.quoted">Quoted</span>
+        </li>
+        <li>
+          <div><h4 data-i18n="addon.odor">Odor treatment</h4><p data-i18n="addon.odor.desc">For smoke, damp or lingering smells.</p></div>
+          <span class="addon-price addon-quote" data-i18n="addons.quoted">Quoted</span>
+        </li>
+        <li>
+          <div><h4 data-i18n="addon.heavyClean">Unusually heavy cleaning</h4><p data-i18n="addon.heavyClean.desc">When the job is well beyond a normal detail.</p></div>
+          <span class="addon-price addon-quote" data-i18n="addons.quoted">Quoted</span>
+        </li>
+      </ul>
+
+      <p class="addons-note" data-i18n="pricing.note">Every price here is a starting price.</p>
     </div>
   </div>
 </section>
@@ -311,18 +408,18 @@
   <div class="section-bg"><img src="/assets/img/palms.webp" srcset="/assets/img/palms-sm.webp 760w, /assets/img/palms.webp 1296w" sizes="100vw" alt="" aria-hidden="true" loading="lazy" width="1296" height="768"></div>
   <div class="wrap split">
     <div class="why-copy reveal">
-      <p class="eyebrow">Why Coral Auto Spa</p>
-      <h2 class="display">More Than A Car Wash.<br><span class="accent">It Comes To You.</span></h2>
-      <p>We're a locally owned, insured mobile detailing company serving Southwest Florida. We turn up fully equipped with our own water and power, so all we need is somewhere to park beside your vehicle.</p>
-      <p class="why-tagline">Wherever you are becomes our shop.</p>
+      <p class="eyebrow" data-i18n="about.eyebrow">Why Coral Auto Spa</p>
+      <h2 class="display"><span data-i18n="about.title1">More Than A Car Wash.</span><br><span class="accent" data-i18n="about.title2">It Comes To You.</span></h2>
+      <p data-i18n="about.body">We are a locally owned, insured mobile detailing company serving Southwest Florida.</p>
+      <p class="why-tagline" data-i18n="about.tagline">Wherever you are becomes our shop.</p>
       <div class="why-actions">
-        <a class="btn btn-primary" href="#book">
-          <span>Book Now</span>
+        <a class="btn btn-primary" href="#book" data-choice="membership">
+          <span data-i18n="pricing.memberCta">Join &amp; Book</span>
           <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
         </a>
         <a class="play-link" href="#process">
           <span class="play-btn"><svg class="ic ic-fill" aria-hidden="true"><use href="#i-play"/></svg></span>
-          <span>How It Works</span>
+          <span data-i18n="about.howItWorks">How It Works</span>
         </a>
       </div>
     </div>
@@ -330,18 +427,18 @@
     <div class="feature-row reveal">
       <div class="feature">
         <span class="feature-ic"><svg class="ic" aria-hidden="true"><use href="#i-car"/></svg></span>
-        <h3>We Come To You</h3>
-        <p>Home, work, wherever the vehicle is parked.</p>
+        <h3 data-i18n="about.f1">We Come To You</h3>
+        <p data-i18n="about.f1d">Home, work, wherever the vehicle is parked.</p>
       </div>
       <div class="feature">
         <span class="feature-ic"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg></span>
-        <h3>Fully Equipped</h3>
-        <p>Our own water and power. Nothing needed from you.</p>
+        <h3 data-i18n="about.f2">Fully Equipped</h3>
+        <p data-i18n="about.f2d">Our own water and power.</p>
       </div>
       <div class="feature">
         <span class="feature-ic"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg></span>
-        <h3>Honest Pricing</h3>
-        <p>Agreed up front. No surprises at handover.</p>
+        <h3 data-i18n="about.f3">Honest Pricing</h3>
+        <p data-i18n="about.f3d">Agreed up front.</p>
       </div>
     </div>
   </div>
@@ -352,37 +449,37 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">How It Works</p>
-        <h2 class="display">It's As Easy As <span class="accent-ink">1, 2, 3</span></h2>
+        <p class="eyebrow" data-i18n="process.eyebrow">How It Works</p>
+        <h2 class="display"><span data-i18n="process.title">It's As Easy As</span> <span class="accent-ink">1, 2, 3</span></h2>
       </div>
-      <p class="lead process-lead">No hoses, no queues, no wasted Saturday.<br>Book it and we take care of the rest.</p>
+      <p class="lead process-lead" data-i18n-html="process.lead">Book it and we take care of the rest.</p>
     </div>
 
     <ol class="steps reveal">
       <li class="step">
         <span class="step-num">01</span>
         <span class="step-ic"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg></span>
-        <h3>Send A Request</h3>
-        <p>Tell us the vehicle, the address and when suits you. Add photos if the inside needs extra work.</p>
+        <h3 data-i18n="process.s1">Send A Request</h3>
+        <p data-i18n="process.s1d">Tell us the vehicle, the address and when suits you.</p>
       </li>
       <li class="step">
         <span class="step-num">02</span>
         <span class="step-ic"><svg class="ic" aria-hidden="true"><use href="#i-car"/></svg></span>
-        <h3>We Come To You</h3>
-        <p>We confirm the price first, then arrive fully equipped with our own water and power.</p>
+        <h3 data-i18n="process.s2">We Come To You</h3>
+        <p data-i18n="process.s2d">We confirm the price first, then arrive fully equipped.</p>
       </li>
       <li class="step">
         <span class="step-num">03</span>
         <span class="step-ic"><svg class="ic" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
-        <h3>We Check It Together</h3>
-        <p>We walk the finished vehicle with you before we leave, so you see exactly what was done.</p>
+        <h3 data-i18n="process.s3">We Check It Together</h3>
+        <p data-i18n="process.s3d">We walk the finished vehicle with you before we leave.</p>
       </li>
     </ol>
   </div>
 
   <figure class="process-band reveal">
     <img src="/assets/img/process.webp" srcset="/assets/img/process-sm.webp 640w, /assets/img/process.webp 1000w" sizes="100vw" alt="Freshly detailed vehicle gleaming in the evening light" loading="lazy" width="1000" height="932">
-    <figcaption class="script process-script">So fresh anywhere you are.</figcaption>
+    <figcaption class="script process-script" data-i18n="process.script">So fresh anywhere you are.</figcaption>
   </figure>
 </section>
 
@@ -391,41 +488,45 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">Our Work</p>
-        <h2 class="display">Results You Can <span class="accent-ink">See.</span></h2>
-        <p class="lead">A look at the kind of finish every booking gets.</p>
+        <p class="eyebrow" data-i18n="gallery.eyebrow">Our Work</p>
+        <h2 class="display"><span data-i18n="gallery.title1">Results You Can</span> <span class="accent-ink" data-i18n="gallery.title2">See.</span></h2>
+        <p class="lead" data-i18n="gallery.lead">Real vehicles we have detailed around Southwest Florida.</p>
       </div>
-      <a class="link-arrow" href="#book">Book Your Detail
+      <a class="link-arrow" href="#book" data-choice="membership">
+        <span data-i18n="gallery.book">Book Your Detail</span>
         <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
       </a>
     </div>
 
-    <div class="gallery-grid reveal">
+    <!-- Filled from the admin gallery when it has items; the stills below are
+         the fallback until real before/after sets are uploaded. -->
+    <div class="gallery-grid reveal" id="galleryGrid">
       <figure class="gallery-item">
-        <img src="/assets/img/hero.webp" srcset="/assets/img/hero-sm.webp 760w, /assets/img/hero.webp 1344w" sizes="(max-width: 680px) 92vw, 66vw" alt="Truck being rinsed at sunset by the water" loading="lazy" width="1344" height="752">
-        <figcaption>On Location</figcaption>
+        <img src="/assets/img/hero.webp" srcset="/assets/img/hero-sm.webp 760w, /assets/img/hero.webp 1344w" sizes="(max-width: 680px) 92vw, 66vw" alt="Truck being rinsed at sunset" loading="lazy" width="1344" height="752">
       </figure>
       <figure class="gallery-item">
         <img src="/assets/img/gal-wheels.webp" srcset="/assets/img/gal-wheels-sm.webp 700w, /assets/img/gal-wheels.webp 900w" sizes="(max-width: 680px) 92vw, 33vw" alt="Alloy wheel being scrubbed with a detailing brush" loading="lazy" width="900" height="675">
-        <figcaption>Wheels &amp; Tires</figcaption>
       </figure>
       <figure class="gallery-item">
         <img src="/assets/img/gal-foam.webp" srcset="/assets/img/gal-foam-sm.webp 700w, /assets/img/gal-foam.webp 900w" sizes="(max-width: 680px) 92vw, 33vw" alt="Car front end covered in a thick foam bath" loading="lazy" width="900" height="675">
-        <figcaption>Hand Wash</figcaption>
       </figure>
       <figure class="gallery-item">
-        <img src="/assets/img/gal-gloss.webp" srcset="/assets/img/gal-gloss-sm.webp 700w, /assets/img/gal-gloss.webp 900w" sizes="(max-width: 680px) 92vw, 33vw" alt="Microfibre cloth resting on a clean black hood" loading="lazy" width="900" height="675">
-        <figcaption>Hand Dried</figcaption>
+        <img src="/assets/img/gal-gloss.webp" srcset="/assets/img/gal-gloss-sm.webp 700w, /assets/img/gal-gloss.webp 900w" sizes="(max-width: 680px) 92vw, 33vw" alt="Microfiber cloth resting on a clean black hood" loading="lazy" width="900" height="675">
       </figure>
       <figure class="gallery-item">
         <img src="/assets/img/gal-interior.webp" srcset="/assets/img/gal-interior-sm.webp 700w, /assets/img/gal-interior.webp 900w" sizes="(max-width: 680px) 92vw, 33vw" alt="Clean car cabin with dashboard and steering wheel" loading="lazy" width="900" height="675">
-        <figcaption>Interior Reset</figcaption>
       </figure>
       <figure class="gallery-item">
-        <img src="/assets/img/card-detail.webp" srcset="/assets/img/card-detail-sm.webp 700w, /assets/img/card-detail.webp 900w" sizes="(max-width: 680px) 92vw, 33vw" alt="Coral Auto Spa detailer at work in the golden hour" loading="lazy" width="900" height="675">
-        <figcaption>At Your Place</figcaption>
+        <img src="/assets/img/card-detail.webp" srcset="/assets/img/card-detail-sm.webp 700w, /assets/img/card-detail.webp 900w" sizes="(max-width: 680px) 92vw, 33vw" alt="Coral Auto Spa detailer at work" loading="lazy" width="900" height="675">
       </figure>
     </div>
+
+    <p class="gallery-cta reveal" data-biz-contact hidden>
+      <a class="btn btn-outline" data-biz-instagram href="#">
+        <svg class="ic" aria-hidden="true"><use href="#i-instagram"/></svg>
+        <span data-i18n="gallery.instagram">More on Instagram</span>
+      </a>
+    </p>
   </div>
 </section>
 
@@ -437,43 +538,31 @@
     </div>
 
     <div class="guarantee-copy reveal">
-      <p class="eyebrow">Our Promise</p>
-      <h2 class="display">The Coral <span class="accent">Guarantee.</span></h2>
-      <p class="guarantee-lead">We don't pack up until it's right. If something's been missed, say so and we'll put it right.</p>
+      <p class="eyebrow" data-i18n="guarantee.eyebrow">Our Promise</p>
+      <h2 class="display"><span data-i18n="guarantee.title1">The Coral</span> <span class="accent" data-i18n="guarantee.title2">Guarantee.</span></h2>
+      <p class="guarantee-lead" data-i18n="guarantee.lead">We don't pack up until it's right.</p>
 
       <ul class="promise-list">
         <li>
           <span class="promise-ic"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-          <div>
-            <h3>Locally owned and insured</h3>
-            <p>A Southwest Florida business, carrying insurance on every job.</p>
-          </div>
+          <div><h3 data-i18n="guarantee.p1">Locally owned and insured</h3><p data-i18n="guarantee.p1d">A Southwest Florida business.</p></div>
         </li>
         <li>
           <span class="promise-ic"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-          <div>
-            <h3>We bring everything</h3>
-            <p>Our own water and power. Just leave us room to park.</p>
-          </div>
+          <div><h3 data-i18n="guarantee.p2">We bring everything</h3><p data-i18n="guarantee.p2d">Our own water and power.</p></div>
         </li>
         <li>
           <span class="promise-ic"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-          <div>
-            <h3>Price agreed first</h3>
-            <p>We confirm the exact figure with you before any work starts.</p>
-          </div>
+          <div><h3 data-i18n="guarantee.p3">Price agreed first</h3><p data-i18n="guarantee.p3d">Confirmed before any work starts.</p></div>
         </li>
         <li>
           <span class="promise-ic"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-          <div>
-            <h3>Checked with you</h3>
-            <p>We walk the finished vehicle with you before we leave.</p>
-          </div>
+          <div><h3 data-i18n="guarantee.p4">Checked with you</h3><p data-i18n="guarantee.p4d">We walk the finished vehicle with you.</p></div>
         </li>
       </ul>
 
-      <a class="btn btn-primary btn-lg" href="#book">
-        <span>Book With Confidence</span>
+      <a class="btn btn-primary btn-lg" href="#book" data-choice="membership">
+        <span data-i18n="guarantee.cta">Book With Confidence</span>
         <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
       </a>
     </div>
@@ -485,206 +574,208 @@
   <div class="wrap">
     <div class="section-head section-head-center reveal">
       <div>
-        <p class="eyebrow">Good To Know</p>
-        <h2 class="display">Questions? <span class="accent-ink">Answered.</span></h2>
+        <p class="eyebrow" data-i18n="faq.eyebrow">Good To Know</p>
+        <h2 class="display"><span data-i18n="faq.title1">Questions?</span> <span class="accent-ink" data-i18n="faq.title2">Answered.</span></h2>
       </div>
     </div>
 
     <div class="faq-list reveal" id="faqList">
-      <div class="faq-item">
-        <h3><button class="faq-q" aria-expanded="false">Where do you operate?
-          <span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
-        </button></h3>
-        <div class="faq-a"><div><p>We're a mobile service across Southwest Florida. We detail at your home, your workplace, or wherever your vehicle is parked. Send a request with your address and we'll confirm we can reach you.</p></div></div>
-      </div>
-
-      <div class="faq-item">
-        <h3><button class="faq-q" aria-expanded="false">Do you need my water or power?
-          <span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
-        </button></h3>
-        <div class="faq-a"><div><p>No. We arrive with our own water and power. All we need is a safe place to park beside your vehicle.</p></div></div>
-      </div>
-
-      <div class="faq-item">
-        <h3><button class="faq-q" aria-expanded="false">What do I get for $100?
-          <span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
-        </button></h3>
-        <div class="faq-a"><div><p>A complete exterior hand wash including wheels, tires, wheel wells, windows, trim and tire dressing, plus a full interior clean: trash out, blown through, deep vacuum of seats, carpets, mats and trunk, and a proper wipe down of the dash, console, cupholders, vents, door panels, door jambs and interior glass, with detailing brushes through the tight spots.</p></div></div>
-      </div>
-
-      <div class="faq-item">
-        <h3><button class="faq-q" aria-expanded="false">Why might it cost more than $100?
-          <span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
-        </button></h3>
-        <div class="faq-a"><div><p>Larger vehicles and heavily soiled interiors take longer, and add-ons like seat or carpet shampooing, heavy stains, pet hair, sand or odor treatment are extra labor. Whatever the total comes to, we agree it with you before we start. Nothing gets added at the end.</p></div></div>
-      </div>
-
-      <div class="faq-item">
-        <h3><button class="faq-q" aria-expanded="false">Do you offer paint correction or ceramic coating?
-          <span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
-        </button></h3>
-        <div class="faq-a"><div><p>Not at the moment. We'd rather do one thorough interior and exterior detail really well than advertise services we aren't set up for. As the business grows we'll add more, and we'll say so here when we do.</p></div></div>
-      </div>
-
-      <div class="faq-item">
-        <h3><button class="faq-q" aria-expanded="false">What happens if it rains?
-          <span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
-        </button></h3>
-        <div class="faq-a"><div><p>We can work under cover in most conditions. If the weather would make it unsafe or compromise the finish, we reschedule at no charge.</p></div></div>
-      </div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q1">Where do you operate?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a1"></p></div></div></div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q2">Do you need my water or power?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a2"></p></div></div></div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q3">What do I get?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a3"></p></div></div></div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q4">Is shampooing included?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a4"></p></div></div></div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q5">How does the membership work?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a5"></p></div></div></div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q6">Why might it cost more?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a6"></p></div></div></div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q7">Do you offer paint correction?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a7"></p></div></div></div>
+      <div class="faq-item"><h3><button class="faq-q" aria-expanded="false"><span data-i18n="faq.q8">What happens if it rains?</span><span class="faq-ic"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span></button></h3><div class="faq-a"><div><p data-i18n="faq.a8"></p></div></div></div>
     </div>
   </div>
 </section>
 
-<!-- ============ BOOK / CONTACT ============ -->
+<!-- ============ BOOK ============ -->
 <section class="section section-dark" id="book">
   <div class="section-bg"><img src="/assets/img/palms.webp" srcset="/assets/img/palms-sm.webp 760w, /assets/img/palms.webp 1296w" sizes="100vw" alt="" aria-hidden="true" loading="lazy" width="1296" height="768"></div>
   <div class="wrap book-layout" id="contact">
     <div class="book-copy reveal">
-      <p class="eyebrow">Book Your Detail</p>
-      <h2 class="display">Tell Us About<br><span class="accent">Your Ride.</span></h2>
-      <p>Send a request and we'll come back to you with a confirmed time and a confirmed price. No deposit needed to reserve a spot.</p>
+      <p class="eyebrow" data-i18n="book.eyebrow">Book Your Detail</p>
+      <h2 class="display"><span data-i18n="book.title1">Tell Us About</span><br><span class="accent" data-i18n="book.title2">Your Ride.</span></h2>
+      <p data-i18n="book.body">Send a request and we'll come back with a confirmed time and price.</p>
 
       <ul class="contact-list">
-        <li>
-          <span class="contact-ic"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg></span>
-          <span>Mobile service across Southwest Florida</span>
-        </li>
-        <li>
-          <span class="contact-ic"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg></span>
-          <span>We arrive with our own water and power</span>
-        </li>
-        <li>
-          <span class="contact-ic"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg></span>
-          <span>Exact price confirmed before we start</span>
-        </li>
+        <li><span class="contact-ic"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg></span><span data-i18n="book.c1">Mobile service across Southwest Florida</span></li>
+        <li><span class="contact-ic"><svg class="ic" aria-hidden="true"><use href="#i-drop"/></svg></span><span data-i18n="book.c2">We arrive with our own water and power</span></li>
+        <li><span class="contact-ic"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg></span><span data-i18n="book.c3">Exact price confirmed before we start</span></li>
       </ul>
-      <!--
-        CONTACT DETAILS: add your real phone number and email here when ready, e.g.
-        <li>
-          <span class="contact-ic"><svg class="ic"><use href="#i-phone"/></svg></span>
-          <a href="tel:+1YOURNUMBER">(000) 000-0000</a>
-        </li>
-        A matching #i-phone / #i-mail symbol will need adding back to the sprite.
-      -->
+
+      <p class="spanish-note"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span data-i18n="contact.spanishLong">Hablamos Español</span></p>
+
+      <div class="book-contact" data-biz-contact hidden>
+        <a class="btn btn-outline btn-sm" data-biz-tel href="#"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span data-i18n="contact.call">Call</span></a>
+        <a class="btn btn-outline btn-sm" data-biz-sms href="#"><svg class="ic" aria-hidden="true"><use href="#i-message"/></svg><span data-i18n="contact.text">Text</span></a>
+        <a class="btn btn-outline btn-sm" data-biz-instagram href="#"><svg class="ic" aria-hidden="true"><use href="#i-instagram"/></svg><span data-i18n="contact.instagram">Instagram</span></a>
+      </div>
     </div>
 
     <form class="book-form reveal" id="bookForm" novalidate>
 
+      <!-- What they are booking. Pre-selected by whichever button they clicked. -->
+      <fieldset class="choice-field">
+        <legend data-i18n="book.choice">What are you booking?</legend>
+        <div class="choices" id="choices">
+          <label class="choice choice-member">
+            <input type="radio" name="plan" value="membership" checked>
+            <span class="choice-box">
+              <span class="choice-top">
+                <span class="choice-name" data-i18n="book.choiceMember">Monthly membership</span>
+                <span class="choice-flag" data-i18n="member.badge">Most Popular</span>
+              </span>
+              <span class="choice-sub" data-i18n="book.choiceMemberSub">$100/month</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="plan" value="combo">
+            <span class="choice-box">
+              <span class="choice-top"><span class="choice-name" data-i18n="book.choiceCombo">One-time, inside &amp; out</span></span>
+              <span class="choice-sub" data-i18n="book.choiceComboSub">From $120</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="plan" value="interiorOnly">
+            <span class="choice-box">
+              <span class="choice-top"><span class="choice-name" data-i18n="book.choiceInterior">Interior only</span></span>
+              <span class="choice-sub" data-i18n="book.choiceInteriorSub">From $80</span>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="plan" value="exteriorOnly">
+            <span class="choice-box">
+              <span class="choice-top"><span class="choice-name" data-i18n="book.choiceExterior">Exterior only</span></span>
+              <span class="choice-sub" data-i18n="book.choiceExteriorSub">From $65</span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
       <ol class="steps-bar" id="stepsBar" aria-label="Booking progress">
-        <li class="step-dot is-current" data-step="0">
-          <button type="button" class="step-dot-btn">
-            <span class="step-dot-num" aria-hidden="true">1</span>
-            <span class="step-dot-label">Your Details</span>
-          </button>
-        </li>
-        <li class="step-dot" data-step="1">
-          <button type="button" class="step-dot-btn">
-            <span class="step-dot-num" aria-hidden="true">2</span>
-            <span class="step-dot-label">Vehicle &amp; Time</span>
-          </button>
-        </li>
-        <li class="step-dot" data-step="2">
-          <button type="button" class="step-dot-btn">
-            <span class="step-dot-num" aria-hidden="true">3</span>
-            <span class="step-dot-label">Condition</span>
-          </button>
-        </li>
+        <li class="step-dot is-current" data-step="0"><button type="button" class="step-dot-btn"><span class="step-dot-num" aria-hidden="true">1</span><span class="step-dot-label" data-i18n="book.step1">Your Details</span></button></li>
+        <li class="step-dot" data-step="1"><button type="button" class="step-dot-btn"><span class="step-dot-num" aria-hidden="true">2</span><span class="step-dot-label" data-i18n="book.step2">Vehicle &amp; Time</span></button></li>
+        <li class="step-dot" data-step="2"><button type="button" class="step-dot-btn"><span class="step-dot-num" aria-hidden="true">3</span><span class="step-dot-label" data-i18n="book.step3">Condition</span></button></li>
       </ol>
 
-      <!-- Step 1 — the easy bit -->
       <section class="form-step is-active" data-step="0" role="group" aria-labelledby="stepTitle0">
-        <h3 class="form-step-title" id="stepTitle0" tabindex="-1">Let's start simple</h3>
-        <p class="form-step-sub">Just how we reach you. Takes about twenty seconds.</p>
+        <h3 class="form-step-title" id="stepTitle0" tabindex="-1" data-i18n="book.step1Title">Let's start simple</h3>
+        <p class="form-step-sub" data-i18n="book.step1Sub">Just how we reach you.</p>
 
-        <label class="field"><span>Name</span>
-          <input type="text" name="name" autocomplete="name" placeholder="Your name" required>
+        <label class="field"><span data-i18n="book.name">Name</span>
+          <input type="text" name="name" autocomplete="name" data-i18n-attr="placeholder:book.namePh" placeholder="Your name" required>
         </label>
         <div class="field-row">
-          <label class="field"><span>Phone</span>
+          <label class="field"><span data-i18n="book.phone">Phone</span>
             <input type="tel" name="phone" autocomplete="tel" placeholder="(000) 000-0000" required>
           </label>
-          <label class="field"><span>Email</span>
-            <input type="email" name="email" autocomplete="email" placeholder="you@email.com" required>
+          <label class="field"><span data-i18n="book.email">Email</span>
+            <input type="email" name="email" autocomplete="email" data-i18n-attr="placeholder:book.emailPh" placeholder="you@email.com" required>
           </label>
         </div>
+
+        <label class="check check-wide">
+          <input type="checkbox" name="smsOptIn" value="yes" checked>
+          <span><span data-i18n="book.sms">Text me appointment reminders</span></span>
+        </label>
+        <p class="addon-hint" data-i18n="book.smsHint">A week before, two days before, and on the day.</p>
       </section>
 
-      <!-- Step 2 — vehicle, place, time -->
       <section class="form-step" data-step="1" role="group" aria-labelledby="stepTitle1" hidden>
-        <h3 class="form-step-title" id="stepTitle1" tabindex="-1">The vehicle and the spot</h3>
-        <p class="form-step-sub">Where we're meeting it, and when suits you.</p>
+        <h3 class="form-step-title" id="stepTitle1" tabindex="-1" data-i18n="book.step2Title">The vehicle and the spot</h3>
+        <p class="form-step-sub" data-i18n="book.step2Sub">Where we're meeting it, and when suits you.</p>
 
-        <label class="field"><span>Vehicle</span>
-          <input type="text" name="vehicle" placeholder="Year, make and model" required>
+        <label class="field"><span data-i18n="book.vehicle">Vehicle</span>
+          <input type="text" name="vehicle" data-i18n-attr="placeholder:book.vehiclePh" placeholder="Year, make and model" required>
         </label>
-        <label class="field"><span>Service Address</span>
-          <input type="text" name="address" autocomplete="street-address" placeholder="Where should we meet the vehicle?" required>
+        <label class="field"><span data-i18n="book.address">Service Address</span>
+          <input type="text" name="address" autocomplete="street-address" data-i18n-attr="placeholder:book.addressPh" placeholder="Where should we meet the vehicle?" required>
         </label>
         <div class="field-row">
-          <label class="field"><span>Preferred Date</span>
+          <label class="field"><span data-i18n="book.date">Preferred Date</span>
             <input type="date" name="date" required>
           </label>
-          <label class="field"><span>Preferred Time</span>
-            <input type="time" name="time" required>
+          <label class="field"><span data-i18n="book.time">Preferred Time</span>
+            <select name="time" id="timeSelect" required>
+              <option value=""></option>
+            </select>
           </label>
         </div>
+        <p class="slot-note" id="slotNote" role="status" aria-live="polite"></p>
       </section>
 
-      <!-- Step 3 — condition and extras -->
       <section class="form-step" data-step="2" role="group" aria-labelledby="stepTitle2" hidden>
-        <h3 class="form-step-title" id="stepTitle2" tabindex="-1">How's it looking?</h3>
-        <p class="form-step-sub">This is what helps us quote you accurately. All optional.</p>
+        <h3 class="form-step-title" id="stepTitle2" tabindex="-1" data-i18n="book.step3Title">How's it looking?</h3>
+        <p class="form-step-sub" data-i18n="book.step3Sub">This is what helps us quote you accurately.</p>
 
         <fieldset class="field addon-field">
-          <legend>Add-Ons You May Need</legend>
-          <p class="addon-hint">We'll confirm anything extra with you before we start.</p>
+          <legend data-i18n="book.addons">Add-Ons You May Need</legend>
+          <p class="addon-hint" data-i18n="book.addonsHint">Optional.</p>
           <div class="checks">
-            <label class="check"><input type="checkbox" name="addons" value="Seat shampoo"><span>Seat shampoo</span></label>
-            <label class="check"><input type="checkbox" name="addons" value="Carpet shampoo"><span>Carpet shampoo</span></label>
-            <label class="check"><input type="checkbox" name="addons" value="Heavy stains"><span>Heavy stains</span></label>
-            <label class="check"><input type="checkbox" name="addons" value="Pet hair"><span>Pet hair</span></label>
-            <label class="check"><input type="checkbox" name="addons" value="Excessive sand"><span>Excessive sand</span></label>
-            <label class="check"><input type="checkbox" name="addons" value="Odor treatment"><span>Odor treatment</span></label>
-            <label class="check"><input type="checkbox" name="addons" value="Extremely dirty"><span>Extremely dirty</span></label>
-            <label class="check"><input type="checkbox" name="addons" value="Not sure"><span>Not sure yet</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Seat shampoo"><span data-i18n-html="addon.seatShampoo">Seat shampoo</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Carpet shampoo"><span data-i18n-html="addon.carpetShampoo">Carpet shampoo</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Stain removal"><span data-i18n="addon.stainRemoval">Stain removal</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Clay bar"><span data-i18n="addon.clayBar">Clay bar</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Pet hair"><span data-i18n="addon.petHair">Pet hair</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Sand"><span data-i18n="addon.sand">Sand</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Odor"><span data-i18n="addon.odor">Odor</span></label>
+            <label class="check"><input type="checkbox" name="addons" value="Heavy cleaning"><span data-i18n="addon.heavyClean">Heavy cleaning</span></label>
           </div>
-          <label class="field seat-count" id="seatCount" hidden><span>How many seats need shampooing?</span>
-            <input type="number" name="seats" min="1" max="9" step="1" placeholder="e.g. 2" inputmode="numeric">
+          <label class="field seat-count" id="seatCount" hidden><span data-i18n="book.seats">How many seats need shampooing?</span>
+            <input type="number" name="seats" min="1" max="9" step="1" placeholder="2" inputmode="numeric">
           </label>
         </fieldset>
 
-        <label class="field"><span>Condition Of The Vehicle</span>
-          <textarea name="notes" placeholder="How dirty is it? Anything we should know about &mdash; stains, pet hair, sand, smells, or areas that need extra attention."></textarea>
+        <label class="field"><span data-i18n="book.notes">Condition Of The Vehicle</span>
+          <textarea name="notes" data-i18n-attr="placeholder:book.notesPh" placeholder="How dirty is it?"></textarea>
         </label>
 
         <div class="field">
-          <span class="field-label">Photos <em>(optional)</em></span>
+          <span class="field-label"><span data-i18n="book.photos">Photos</span> <em data-i18n="book.photosOptional">(optional)</em></span>
           <label class="dropzone" for="photos">
             <svg class="ic" aria-hidden="true"><use href="#i-image"/></svg>
-            <span class="dropzone-main">Add photos of the vehicle</span>
-            <span class="dropzone-sub">Helps us quote accurately. Up to 5 images, 5MB each.</span>
+            <span class="dropzone-main" data-i18n="book.dropMain">Add photos of the vehicle</span>
+            <span class="dropzone-sub" data-i18n="book.dropSub">Up to 5 images, 5MB each.</span>
             <input type="file" id="photos" name="photos" accept="image/jpeg,image/png,image/webp" multiple>
           </label>
           <ul class="photo-previews" id="photoPreviews"></ul>
         </div>
+
+        <!-- Shown only when the membership is the selected plan. -->
+        <div class="member-terms-box" id="memberTerms" hidden>
+          <h4 data-i18n="member.termsTitle">Before you enroll</h4>
+          <ul>
+            <li data-i18n="member.terms1"></li>
+            <li data-i18n="member.terms2"></li>
+            <li data-i18n="member.terms3"></li>
+            <li data-i18n="member.terms4"></li>
+            <li data-i18n="member.terms5"></li>
+            <li data-i18n="member.terms6"></li>
+          </ul>
+          <label class="check check-wide">
+            <input type="checkbox" name="memberAgree" value="yes" id="memberAgree">
+            <span><span data-i18n="member.agree">I understand this is a recurring monthly charge.</span></span>
+          </label>
+        </div>
       </section>
 
       <div class="form-nav">
-        <button class="btn btn-outline form-back" type="button" id="stepBack" hidden>
-          <span>Back</span>
-        </button>
+        <button class="btn btn-outline form-back" type="button" id="stepBack" hidden><span data-i18n="book.back">Back</span></button>
         <button class="btn btn-primary form-next" type="button" id="stepNext">
-          <span>Continue</span>
+          <span data-i18n="book.next">Continue</span>
           <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
         </button>
         <button class="btn btn-primary form-submit" type="submit" id="stepSubmit" hidden>
-          <span>Request Booking</span>
+          <span id="submitLabel" data-i18n="book.submitMember">Request Membership &amp; Booking</span>
           <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
         </button>
       </div>
 
-      <p class="form-note">We'll reply to confirm your time and your price. No spam, ever.</p>
+      <p class="form-note" data-i18n="book.note">We'll reply to confirm your time and your price.</p>
       <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
     </form>
   </div>
@@ -698,76 +789,83 @@
 
   <div class="wrap">
     <div class="footer-cta">
-      <h2 class="display">Ready For A Cleaner Drive?</h2>
-      <p>One thorough detail, from $100. We come to you.</p>
-      <a class="btn btn-primary btn-lg" href="#book">
-        <span>Book Now</span>
+      <h2 class="display" data-i18n="footer.ctaTitle">Ready For A Cleaner Drive?</h2>
+      <p data-i18n="footer.ctaBody">One full detail, from $120.</p>
+      <a class="btn btn-primary btn-lg" href="#book" data-choice="membership">
+        <span data-i18n-html="member.cta">Join &amp; Book For $100</span>
         <span class="btn-ic"><svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
       </a>
       <ul class="footer-perks">
-        <li class="perk"><svg class="ic" aria-hidden="true"><use href="#i-car"/></svg><span>Anywhere You Are</span></li>
-        <li class="perk"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Locally Owned &amp; Insured</span></li>
-        <li class="perk"><svg class="ic ic-fill" aria-hidden="true"><use href="#i-heart"/></svg><span>Driven By Passion</span></li>
+        <li class="perk"><svg class="ic" aria-hidden="true"><use href="#i-car"/></svg><span data-i18n="footer.perk1">Anywhere You Are</span></li>
+        <li class="perk"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span data-i18n="footer.perk2">Locally Owned &amp; Insured</span></li>
+        <li class="perk"><svg class="ic ic-fill" aria-hidden="true"><use href="#i-heart"/></svg><span data-i18n="footer.perk3">Driven By Passion</span></li>
       </ul>
     </div>
   </div>
 
   <div class="wrap">
     <div class="footer-cols">
-
       <div class="footer-col footer-col-brand">
         <img class="footer-logo" src="/assets/img/logo.webp" alt="Coral Auto Spa" loading="lazy" width="720" height="632">
-        <p class="footer-blurb">Locally owned, insured mobile detailing across Southwest Florida. A full interior and exterior detail, brought to your driveway.</p>
-        <p class="script footer-script">Clean cars, brighter days.</p>
+        <p class="footer-blurb" data-i18n="footer.blurb">Locally owned, insured mobile detailing across Southwest Florida.</p>
+        <p class="footer-spanish"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span data-i18n="contact.spanish">Hablamos Español</span></p>
+        <p class="script footer-script" data-i18n="footer.script">Clean cars, brighter days.</p>
       </div>
 
       <nav class="footer-col" aria-label="Site">
-        <h3>Explore</h3>
+        <h3 data-i18n="footer.explore">Explore</h3>
         <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#service">The Detail</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#home" data-i18n="nav.home">Home</a></li>
+          <li><a href="#service" data-i18n="nav.detail">The Detail</a></li>
+          <li><a href="#pricing" data-i18n="nav.pricing">Pricing</a></li>
+          <li><a href="#about" data-i18n="nav.about">About</a></li>
+          <li><a href="#gallery" data-i18n="nav.gallery">Gallery</a></li>
         </ul>
       </nav>
 
       <nav class="footer-col" aria-label="Service">
-        <h3>Service</h3>
+        <h3 data-i18n="footer.service">Service</h3>
         <ul>
-          <li><a href="#service">What's Included</a></li>
-          <li><a href="#pricing">Add-Ons</a></li>
-          <li><a href="#guarantee">Our Guarantee</a></li>
-          <li><a href="#faq">FAQ</a></li>
-          <li><a href="#book">Book A Detail</a></li>
+          <li><a href="#service" data-i18n="footer.included">What's Included</a></li>
+          <li><a href="#pricing" data-i18n="footer.addons">Add-Ons</a></li>
+          <li><a href="#guarantee" data-i18n="footer.guarantee">Our Guarantee</a></li>
+          <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+          <li><a href="#book" data-i18n="footer.bookDetail">Book A Detail</a></li>
         </ul>
       </nav>
 
       <div class="footer-col footer-col-contact">
-        <h3>Coral Auto Spa</h3>
+        <h3 data-i18n="footer.company">Coral Auto Spa</h3>
         <ul>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg><span>Southwest Florida</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-car"/></svg><span>Mobile &mdash; we come to you</span></li>
-          <li><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Locally owned and insured</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg><span data-i18n="footer.area">Southwest Florida</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-car"/></svg><span data-i18n="footer.mobile">Mobile — we come to you</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span data-i18n="footer.insured">Locally owned and insured</span></li>
         </ul>
-        <!--
-          SOCIAL LINKS: removed until real profiles exist. To restore, add the
-          #i-instagram / #i-facebook / #i-tiktok symbols back to the sprite and
-          drop a <div class="socials"> of anchors here with the real URLs.
-        -->
+        <div class="socials" data-biz-contact hidden>
+          <a data-biz-instagram href="#" aria-label="Instagram"><svg class="ic" aria-hidden="true"><use href="#i-instagram"/></svg></a>
+          <a data-biz-tel href="#" aria-label="Call"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg></a>
+          <a data-biz-sms href="#" aria-label="Text"><svg class="ic" aria-hidden="true"><use href="#i-message"/></svg></a>
+        </div>
       </div>
-
     </div>
   </div>
 
   <div class="wrap">
     <div class="footer-bottom">
-      <p>&copy; <span id="year">2026</span> Coral Auto Spa. All rights reserved.</p>
-      <p class="footer-tagline">Wherever you are becomes our shop.</p>
+      <p>&copy; <span id="year">2026</span> Coral Auto Spa. <span data-i18n="footer.rights">All rights reserved.</span></p>
+      <p class="footer-tagline" data-i18n="footer.tagline">Wherever you are becomes our shop.</p>
     </div>
   </div>
 </footer>
 
-<script src="/assets/js/main.js?v=32" defer></script>
+<!-- Sticky call / text bar for phones. Hidden until a number is configured. -->
+<div class="mobile-bar" data-biz-contact hidden>
+  <a class="mobile-bar-btn" data-biz-tel href="#"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg><span data-i18n="contact.call">Call</span></a>
+  <a class="mobile-bar-btn" data-biz-sms href="#"><svg class="ic" aria-hidden="true"><use href="#i-message"/></svg><span data-i18n="contact.text">Text</span></a>
+  <a class="mobile-bar-btn mobile-bar-cta" href="#book" data-choice="membership"><svg class="ic" aria-hidden="true"><use href="#i-repeat"/></svg><span data-i18n="pricing.memberCta">Join &amp; Book</span></a>
+</div>
+
+<script src="/assets/js/i18n.js?v=43"></script>
+<script src="/assets/js/main.js?v=43" defer></script>
 </body>
 </html>

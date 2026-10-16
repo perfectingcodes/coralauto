@@ -184,97 +184,214 @@ aware that images are served with a one-week cache.** Returning visitors keep
 the old file until it expires. If that matters for a launch, rename the image
 or add a query string to its `src`.
 
-## The offer
+## What the site sells
 
-The site sells **one** service:
+One detailing package, two ways to book it.
 
-**Full Interior & Exterior Detail — starting at $100.**
-
-Exterior: complete hand wash and dry, wheels, tires and wheel wells, exterior
-windows, exterior trim, tire dressing.
-
-Interior: trash removed and blown out, deep vacuum of seats, carpets, mats and
-trunk, dashboard, center console, cupholders, vents, door panels, door jambs,
-interior windows, detailing brushes through the tight spots.
-
-Explicitly outside the base price: shampooing, stain extraction and heavy steam
-cleaning.
-
-### Add-ons
-
-| Add-on | Price |
+| | Price |
 | --- | --- |
-| Seat shampoo & stain removal | $15 per seat |
-| Carpet shampoo | Quoted |
-| Heavy stain removal | Quoted |
-| Excessive pet hair | Quoted |
-| Excessive sand | Quoted |
-| Odor treatment | Quoted |
-| Extremely dirty vehicle | Quoted |
+| **Monthly membership** | **$100/month** — one full interior & exterior detail each month, one enrolled vehicle |
+| One-time, inside and out | From $120 |
+| Interior only | From $80 |
+| Exterior only | From $65 |
 
-The page states throughout that the final price depends on vehicle size and
-condition, and is confirmed with the customer before any work starts.
+Booking the two halves separately comes to $145, so the $120 combo saves $25.
+A member saves $20 a visit against the $120 starting price, and member pricing
+applies from the first visit — nobody pays $120 before enrolling.
 
-### Kept for later
+All four numbers live in **`lib/pricing.js`** and nowhere else. The page, the
+booking form, the dictionary and the admin catalogue all read from it, so
+changing a price is a one-line edit.
 
-The Gold / Platinum / MVP badge artwork is still in `assets/img/` (`pkg-*.webp`)
-and `scripts/add_packages.py` still builds it, even though nothing references it
-now. It is there for if the business ever does move to tiers. Nothing on the
-live page links to it.
+### Included in every detail
 
-### Not offered
+Exterior: hand wash and dry, wheels, tires, wheel wells, exterior windows,
+trim, tire dressing, and a **spray-wax finish**.
 
-Paint correction, machine polishing and ceramic coating are deliberately absent,
-and the FAQ says so plainly. Do not add them back until the equipment and the
-intent are actually there. The stock photo of a detailer using a machine
-polisher was removed for the same reason.
+Interior: trash out, blown through, deep vacuum of seats, carpets, mats and
+trunk, dashboard, console, cupholders, vents, door panels, door jambs,
+interior glass, detailing brushes through the tight spots.
 
-## Booking form
+### Deliberately NOT included
 
-A three-step wizard, so the first thing anyone sees is three easy fields:
+Seat shampooing, carpet extraction and stain-removal treatments are add-ons.
+The site says so three times: in the detail section, in the add-on list and in
+its own FAQ entry. "Deep vacuum" is never allowed to read as "shampoo".
 
-1. **Your Details** — name, phone, email
-2. **Vehicle & Time** — vehicle, service address, preferred date and time
-3. **Condition** — add-ons, seat count, free-text condition, photo upload
+Spray wax is described as a spray-wax finish. It is not polishing, paint
+correction or a ceramic coating, and the FAQ says plainly that those are not
+offered.
 
-Each step validates before it will advance, with inline messages under the
-offending field. Completed steps can be revisited from the numbered bar. The
-final submit re-checks every step, not just the visible one.
+Clay bar is an add-on, quoted. Its copy says it lifts bonded contaminants so
+the paint feels smoother, that the spray wax follows it, and that it is not
+machine polishing and will not remove scratches or every water spot.
 
-`POST /api/booking` takes JSON, creates a lead in the admin portal (see above)
-and appends a line to `bookings.log`.
+## Booking, membership and reminders
 
-### Photo uploads
+### What actually happens when someone books
 
-Photos are read in the browser, sent as data URLs inside the JSON body, and
-written to `uploads/` by the server under a name the server chooses. The client
-filename is never trusted.
+Everything that arrives from the site is a **request**, not a confirmed
+appointment. `lib/booking.js` records it with `status: "requested"`, and it
+stays that way until someone confirms it in the admin portal. That is the
+point: a preferred time has to be checked against the real calendar before it
+becomes a booking.
 
-Limits, enforced on both sides: up to 5 files, 5MB each, JPG/PNG/WebP only, and
-a 30MB cap on the whole request body.
+The time dropdown only ever offers genuinely open slots. `lib/scheduling.js`
+works them out from the business hours in settings, minus existing
+appointments, minus anything less than an hour away. Confirmed work always
+blocks a slot; an unconfirmed request holds its slot for 48 hours so two people
+cannot ask for the same time, then releases it so an abandoned request cannot
+wall off a slot forever.
 
-`uploads/` sits outside `public/`, so photos are **not** reachable over HTTP,
-and it is gitignored so customer photos never reach the repo. If you move the
-site to a host with an ephemeral filesystem, uploads will not survive restarts —
-send them somewhere durable at that point.
+Confirming is a real action, not a status edit:
+
+```
+POST /api/admin/appointments/:id/confirm      { date?, time?, force? }
+POST /api/admin/appointments/:id/reschedule   { date, time }
+POST /api/admin/appointments/:id/cancel       { reason? }
+GET  /api/admin/appointments/:id/reminders
+```
+
+Confirm refuses a slot that clashes with another confirmed appointment unless
+you pass `force`. Confirming is also what schedules the reminders.
+
+### MEMBERSHIP STATUS — read this before launch
+
+**The site cannot currently take a recurring payment.** No payment provider is
+connected, and no card details are collected anywhere on this site.
+
+What the membership flow does today:
+
+1. Shows the $100/month offer, the terms, and a required agreement checkbox.
+2. Records a membership with `status: "requested"` and
+   `billingStatus: "not_set_up"`, with a timestamp of when they agreed and the
+   price they agreed to.
+3. Tells the customer, in their language, that we will confirm the first visit
+   and set up billing **before anything is charged**.
+
+It never shows a successful subscription, because there isn't one. The customer
+record stays `isMember: false` until billing genuinely exists.
+
+To make it real you need a payment provider — Stripe Checkout in subscription
+mode is the natural fit, since card details go to Stripe and never touch this
+server. When that is wired up, two rules from the brief have to be honoured in
+code:
+
+- **Never charge twice for the same visit.** The join page has an "I've already
+  paid for today's detail" checkbox, stored as `alreadyPaidToday`. When it is
+  set, the first billing date must be a month out, not today.
+- **Reuse a saved card only after they agree to recurring billing.** The
+  agreement timestamp is already recorded; do not create a subscription without
+  one.
+
+### In-person signup
+
+`/join` (`/unirse` works too) is a short, mobile-first page for signing someone
+up while you are standing with them. `/join?qr=1` shows a QR code pointing at
+`/join` for them to scan — generate it on your phone, let them finish on theirs.
+
+The QR encoder is `lib/qr.js`, written from the ISO spec with no dependencies.
+`node scripts/qr_verify.js --page` builds a self-test page that decodes its own
+output; the encoder was verified by decoding, not by eye.
+
+### Text reminders
+
+Three per confirmed appointment, in the customer's language:
+
+| | When |
+| --- | --- |
+| First | 7 days before, same time of day |
+| Second | 2 days before, same time of day |
+| Third | 3 hours before, but never earlier than 7:30am |
+
+A 9am appointment gets its last reminder at 7:30am, not 6am.
+
+The week and two-day reminders use calendar arithmetic, not "minus 7×24 hours".
+Subtracting fixed milliseconds across a daylight-saving change drags the
+reminder an hour off, so a 10am appointment would get its week-before text at
+9am. `scripts/` has no test runner, but the DST cases are worth re-checking by
+hand if you touch `lib/scheduling.js`.
+
+Reminders are rows in the database with a UTC fire time, so a restart or
+redeploy does not lose them. A ticker checks every minute. Rescheduling an
+appointment cancels its pending reminders and rebuilds them; cancelling an
+appointment cancels them outright. Anything more than six hours late is dropped
+rather than sent.
+
+**Sending is not connected.** `lib/sms.js` talks to Twilio over plain HTTPS and
+needs three environment variables:
+
+```
+TWILIO_ACCOUNT_SID
+TWILIO_AUTH_TOKEN
+TWILIO_FROM          your sending number, e.g. +12395550142
+```
+
+Without all three, reminders are still scheduled and queued but recorded with
+status `simulated` — never `sent`. The server says so on boot. Note that
+business texting to US numbers also needs A2P 10DLC registration through
+Twilio before messages will deliver reliably.
+
+Customers opt in during booking; the checkbox is on by default and the hint
+mentions message rates and STOP. No opt-in means no reminders get scheduled at
+all.
+
+## English and Spanish
+
+A flag switch sits in the top corner on every screen size, and on `/join`.
+
+Both dictionaries are injected into the page by the server, so switching is
+instant and there is no flash of the wrong language. The choice is remembered
+in `localStorage` and mirrored into a cookie, so the server renders the right
+`<html lang>` on the next visit. `?lang=es` on any URL forces a language, which
+is useful for a link you hand to a customer.
+
+All copy lives in **`lib/i18n.js`** — 274 keys, English and Spanish in strict
+parity. Prices are never written into the strings; they come through as
+`{{combo}}`, `{{member}}` and so on, interpolated from `lib/pricing.js`. That is
+why English and Spanish cannot disagree about a price.
+
+The same dictionary writes the SMS reminders, so a Spanish-speaking customer
+gets Spanish texts.
+
+To add a string: add the key to both `en` and `es`, then put
+`data-i18n="your.key"` on the element. Use `data-i18n-html` only for our own
+copy containing markup, and `data-i18n-attr="placeholder:your.key"` for
+attributes.
 
 ## Still to add
 
-Nothing on the site is invented, but two things are simply missing:
+### Your contact details
 
-- **Phone number and email.** The fabricated ones were removed. The booking
-  form is currently the only way to make contact. `index.html` has a commented
-  block in the booking section showing where to add real details, and the
-  `#i-phone` / `#i-mail` symbols will need adding back to the sprite.
-- **Social links.** Removed rather than left pointing at `#`. There is a comment
-  in the footer showing how to restore them.
+There is still no phone number, email or Instagram handle on the site. These
+are not hard-coded anywhere — set them in the admin portal under settings
+(`business.phone`, `business.smsNumber`, `business.email`,
+`business.instagram`) and the call, text and Instagram buttons appear by
+themselves: in the header menu, in the booking section, in the footer, and as a
+sticky call/text bar on phones. Until then every one of those stays hidden
+rather than linking nowhere.
 
-Claims the site does make, all of which need to stay true: locally owned,
-insured, serving Southwest Florida, arrives with its own water and power,
-confirms the price before starting, and inspects the vehicle with the customer
-before leaving.
+The sticky mobile bar and the "More on Instagram" button are already built and
+waiting on that one setting.
 
-Customer reviews were removed entirely. Add them back only when they are real.
+### Your own photos
+
+The brief asked for real customer work: matching before-and-after pairs,
+Instagram video, strong interior results as well as exterior shine. The gallery
+still shows the stock and generated photography, because no customer photos
+exist in the repo yet.
+
+The markup is ready for them — `#galleryGrid` is populated from the `gallery`
+collection when it has rows, and falls back to the current stills when it does
+not. Dropping in real before/after sets is a data change, not a code change.
+
+### Connected services
+
+| | Status |
+| --- | --- |
+| Recurring payments | Not connected. Membership runs as a request flow. |
+| Text reminders | Scheduled and queued, not sent. Needs Twilio credentials. |
+| A2P 10DLC registration | Required before business SMS delivers in the US. |
 
 ## Mobile
 

@@ -328,14 +328,26 @@
     wrap.appendChild(msg);
   }
 
+  /** Translated string with a hard-coded English fallback. */
+  function tr(key, fallback, vars) {
+    if (window.coral && window.coral.t) {
+      var v = window.coral.t(key, vars);
+      if (v && v !== key) return v;
+    }
+    return fallback;
+  }
+
   function messageFor(input) {
     if (input.validity.valueMissing) {
-      return input.type === "date" ? "Pick a date that suits you."
-        : input.type === "time" ? "Pick a rough time."
-        : "This one's needed.";
+      if (input.type === "date") return tr("book.errDate", "Pick a date that suits you.");
+      if (input.name === "time") return tr("book.errTime", "Pick a rough time.");
+      if (input.type === "checkbox") return tr("member.agree", "Please agree to continue.");
+      return tr("book.errRequired", "This one is needed.");
     }
-    if (input.validity.typeMismatch && input.type === "email") return "That email doesn't look right.";
-    return "Please check this.";
+    if (input.validity.typeMismatch && input.type === "email") {
+      return tr("book.errEmail", "That email does not look right.");
+    }
+    return tr("book.errRequired", "Please check this.");
   }
 
   /* Validate one step; returns true when it can be left.
@@ -459,17 +471,21 @@
         if (!validateStep(i, false)) {
           goTo(i, false);
           validateStep(i, true);   // now on screen, so focus can land
-          showStatus("Something's missing on this step. Take a look above.", false);
+          showStatus(tr("book.errStep", "Something is missing on this step."), false);
           return;
         }
       }
 
       var original = submitBtn.innerHTML;
       submitBtn.disabled = true;
-      submitBtn.textContent = "Sending\u2026";
+      submitBtn.textContent = tr("book.sending", "Sending\u2026");
 
       var fd = new FormData(form);
       var payload = {
+        plan: fd.get("plan") || "combo",
+        smsOptIn: fd.get("smsOptIn") === "yes",
+        memberAgree: fd.get("memberAgree") === "yes",
+        lang: (window.coral && window.coral.lang && window.coral.lang()) || "en",
         name: fd.get("name"),
         phone: fd.get("phone"),
         email: fd.get("email"),
@@ -493,7 +509,7 @@
         .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
         .then(function (r) {
           if (!r.ok) throw new Error(r.data && r.data.error ? r.data.error : "Request failed");
-          showStatus(r.data.message || "Thanks! We'll be in touch shortly to confirm.", true);
+          showStatus(r.data.message || tr("book.ok", "Thanks! We will be in touch shortly."), true);
           form.reset();
           photos = [];
           renderPhotos();
@@ -505,7 +521,7 @@
         .catch(function (err) {
           showStatus(err.message && err.message !== "Request failed"
             ? err.message
-            : "Something went wrong sending that. Please try again in a moment.", false);
+            : tr("book.errGeneric", "Something went wrong sending that."), false);
         })
         .finally(function () {
           submitBtn.disabled = false;
@@ -513,6 +529,176 @@
         });
     });
   }
+
+  /* ---------- Plan selection ---------- */
+  /* Any "Join & book" or "Book a one-time detail" button anywhere on the page
+     carries its choice into the form, so nobody has to explain it twice. */
+  var planInputs = form ? Array.prototype.slice.call(form.querySelectorAll('input[name="plan"]')) : [];
+  var memberTerms = document.getElementById("memberTerms");
+  var memberAgree = document.getElementById("memberAgree");
+  var submitLabel = document.getElementById("submitLabel");
+
+  function selectedPlan() {
+    var hit = planInputs.find(function (i) { return i.checked; });
+    return hit ? hit.value : "combo";
+  }
+
+  function syncPlan() {
+    var isMember = selectedPlan() === "membership";
+
+    if (memberTerms) memberTerms.hidden = !isMember;
+    if (memberAgree) {
+      // Only required when they are actually enrolling.
+      memberAgree.required = isMember;
+      if (!isMember) {
+        memberAgree.checked = false;
+        clearError(memberAgree);
+      }
+    }
+    if (submitLabel) {
+      submitLabel.setAttribute("data-i18n", isMember ? "book.submitMember" : "book.submit");
+      submitLabel.textContent = tr(
+        isMember ? "book.submitMember" : "book.submit",
+        isMember ? "Request Membership & Booking" : "Request Booking"
+      );
+    }
+    // Slot length differs by plan, so the open times can change with it.
+    loadSlots();
+  }
+
+  planInputs.forEach(function (input) {
+    input.addEventListener("change", syncPlan);
+  });
+
+  document.addEventListener("click", function (e) {
+    var trigger = e.target.closest("[data-choice]");
+    if (!trigger || !form) return;
+    var wanted = trigger.getAttribute("data-choice");
+    var input = planInputs.find(function (i) { return i.value === wanted; });
+    if (!input) return;
+    input.checked = true;
+    syncPlan();
+    // The anchor still scrolls to #book; just make sure step one is showing.
+    if (typeof goTo === "function") goTo(0, false);
+  });
+
+  /* ---------- Live availability ---------- */
+  /* The time dropdown only ever offers slots that are genuinely open, so a
+     preferred time is checked against the calendar before it is requested. */
+  var dateInput = form ? form.elements.date : null;
+  var timeSelect = document.getElementById("timeSelect");
+  var slotNote = document.getElementById("slotNote");
+  var slotToken = 0;
+
+  function setSlotNote(text, warn) {
+    if (!slotNote) return;
+    slotNote.textContent = text || "";
+    slotNote.classList.toggle("is-warn", Boolean(warn));
+  }
+
+  function loadSlots() {
+    if (!dateInput || !timeSelect) return;
+    var date = dateInput.value;
+    if (!date) {
+      timeSelect.innerHTML = '<option value=""></option>';
+      setSlotNote("");
+      return;
+    }
+
+    var mine = ++slotToken;
+    setSlotNote(tr("slot.checking", "Checking open times…"));
+
+    fetch("/api/availability?date=" + encodeURIComponent(date) + "&plan=" + encodeURIComponent(selectedPlan()))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (mine !== slotToken) return;   // a newer request has started
+        var previous = timeSelect.value;
+        timeSelect.innerHTML = "";
+        var blank = document.createElement("option");
+        blank.value = "";
+        timeSelect.appendChild(blank);
+
+        (data.slots || []).forEach(function (slot) {
+          var opt = document.createElement("option");
+          opt.value = slot;
+          opt.textContent = formatSlot(slot);
+          timeSelect.appendChild(opt);
+        });
+
+        if (previous && (data.slots || []).indexOf(previous) !== -1) timeSelect.value = previous;
+
+        if (!data.slots || !data.slots.length) {
+          setSlotNote(data.closed
+            ? tr("slot.closed", "We are closed that day. Try another date.")
+            : tr("slot.full", "That day is full. Try another date."), true);
+        } else {
+          setSlotNote("");
+        }
+      })
+      .catch(function () {
+        if (mine !== slotToken) return;
+        setSlotNote("");
+      });
+  }
+
+  /** 14:30 -> 2:30 PM, in whichever language is showing. */
+  function formatSlot(hhmm) {
+    var bits = hhmm.split(":");
+    var d = new Date(2000, 0, 1, Number(bits[0]), Number(bits[1]));
+    try {
+      return new Intl.DateTimeFormat(
+        (window.coral && window.coral.lang() === "es") ? "es-US" : "en-US",
+        { hour: "numeric", minute: "2-digit", hour12: true }
+      ).format(d);
+    } catch (err) {
+      return hhmm;
+    }
+  }
+
+  if (dateInput) {
+    // Nothing in the past.
+    dateInput.min = new Date().toISOString().slice(0, 10);
+    dateInput.addEventListener("change", loadSlots);
+  }
+  document.addEventListener("coral:lang", loadSlots);
+
+  /* ---------- Business contact details ---------- */
+  /* Call, text and Instagram only appear once a real number or handle is set
+     in the admin portal. No dead links, no placeholder numbers. */
+  try { (function wireContacts() {
+    var biz = (window.__CORAL__ && window.__CORAL__.biz) || {};
+    var tel = String(biz.phone || "").replace(/[^\d+]/g, "");
+    var smsNum = String(biz.smsNumber || biz.phone || "").replace(/[^\d+]/g, "");
+    var ig = String(biz.instagram || "").trim().replace(/^@/, "");
+
+    if (tel) {
+      document.querySelectorAll("[data-biz-tel]").forEach(function (el) { el.href = "tel:" + tel; });
+    }
+    if (smsNum) {
+      document.querySelectorAll("[data-biz-sms]").forEach(function (el) { el.href = "sms:" + smsNum; });
+    }
+    if (ig) {
+      var url = /^https?:/i.test(biz.instagram) ? biz.instagram : "https://instagram.com/" + ig;
+      document.querySelectorAll("[data-biz-instagram]").forEach(function (el) {
+        el.href = url;
+        el.target = "_blank";
+        el.rel = "noopener";
+      });
+    }
+
+    var anything = Boolean(tel || smsNum || ig);
+    document.querySelectorAll("[data-biz-contact]").forEach(function (el) {
+      // A group with nothing to link to stays hidden entirely; otherwise hide
+      // just the individual buttons that have no destination.
+      el.hidden = !anything;
+      if (!anything) return;
+      if (!tel) el.querySelectorAll("[data-biz-tel]").forEach(function (n) { n.hidden = true; });
+      if (!smsNum) el.querySelectorAll("[data-biz-sms]").forEach(function (n) { n.hidden = true; });
+      if (!ig) el.querySelectorAll("[data-biz-instagram]").forEach(function (n) { n.hidden = true; });
+    });
+  })(); } catch (err) { console.error("Contact links could not be wired:", err); }
+
+  if (form) syncPlan();
 
   /* ---------- Footer year ---------- */
   var year = document.getElementById("year");

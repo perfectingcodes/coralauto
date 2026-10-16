@@ -1189,3 +1189,395 @@ a, button, [role="button"] { -webkit-tap-highlight-color: rgba(33, 196, 240, .18
   .btn { font-size: 13px; padding-left: 20px; }
   .btn-lg { font-size: 14px; padding-left: 24px; }
 }
+
+/* ==========================================================================
+   Language switch
+   ========================================================================== */
+/* Only a non-English first paint is held back, and only until the swap lands.
+   i18n.js clears this, and a timer clears it regardless if anything goes wrong. */
+html[data-lang-pending] body { visibility: hidden; }
+
+.lang-switch {
+  display: inline-flex; align-items: center; gap: 2px; flex: 0 0 auto;
+  padding: 3px; border-radius: 999px;
+  background: rgba(8, 22, 40, .5);
+  border: 1px solid rgba(255, 255, 255, .14);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.lang-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border: 0; border-radius: 999px;
+  background: transparent; color: rgba(255, 255, 255, .62);
+  font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
+  line-height: 1; white-space: nowrap;
+  transition: background-color .2s ease, color .2s ease;
+}
+.lang-btn:hover { color: #fff; }
+.lang-btn.is-on {
+  background: rgba(33, 196, 240, .2);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(69, 216, 255, .4);
+}
+.lang-flag { font-size: 14px; line-height: 1; }
+@media (max-width: 1180px) { .lang-word { display: none; } .lang-btn { padding: 7px 9px; } }
+
+/* ==========================================================================
+   Hero + membership card
+   ========================================================================== */
+.hero-grid {
+  display: grid; align-items: center;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+  gap: clamp(28px, 4vw, 64px);
+}
+@media (max-width: 1040px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+  .hero-content { max-width: none; }
+}
+
+/* The main offer. Sits beside the headline on desktop and directly under it
+   on a phone, so nobody has to scroll past the services to find it. */
+.member-card {
+  position: relative; isolation: isolate;
+  padding: clamp(24px, 2.6vw, 32px) clamp(20px, 2.4vw, 28px) clamp(22px, 2.4vw, 28px);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(33, 196, 240, .17) 0%, rgba(6, 18, 36, .92) 55%),
+    rgba(6, 18, 36, .9);
+  border: 1px solid rgba(69, 216, 255, .45);
+  box-shadow:
+    0 28px 64px -28px rgba(0, 0, 0, .95),
+    0 0 50px -16px rgba(33, 196, 240, .5),
+    inset 0 1px 0 rgba(255, 255, 255, .12);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  color: rgba(255, 255, 255, .84);
+}
+.member-badge {
+  position: absolute; top: -13px; left: 50%; translate: -50% 0; z-index: 2;
+  padding: 6px 16px; border-radius: 999px; white-space: nowrap;
+  font-family: var(--font-display); font-style: italic; font-stretch: 110%;
+  font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: #041624;
+  background: linear-gradient(180deg, var(--cyan-300), var(--cyan-500));
+  box-shadow: 0 8px 20px -6px rgba(14, 165, 212, .8), inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+.member-kicker {
+  font-family: var(--font-display); font-weight: 900; font-style: italic; font-stretch: 116%;
+  font-size: clamp(17px, 1.9vw, 21px); line-height: 1.05; text-transform: uppercase;
+  color: #fff; margin-bottom: 14px; letter-spacing: -.01em;
+}
+.member-figure { display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px; }
+.member-amount {
+  font-family: var(--font-display); font-weight: 900; font-style: italic; font-stretch: 118%;
+  font-size: clamp(50px, 6vw, 70px); line-height: 1; color: var(--cyan-300);
+  text-shadow: 0 6px 26px rgba(33, 196, 240, .45);
+}
+.member-per { font-size: 15px; font-weight: 700; color: rgba(255, 255, 255, .6); }
+.member-desc { font-size: 14.5px; line-height: 1.55; margin-bottom: 16px; }
+.member-points { display: grid; gap: 9px; margin-bottom: 20px; }
+.member-points li { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; line-height: 1.45; }
+.member-points .ic { font-size: 16px; margin-top: 1px; stroke-width: 2.6; color: var(--cyan-400); flex: 0 0 auto; }
+.member-cta { margin-bottom: 12px; }
+.member-alt {
+  display: block; text-align: center; padding: 10px 6px;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .72);
+  border: 1px solid rgba(255, 255, 255, .2); border-radius: 999px;
+  transition: border-color .2s ease, color .2s ease, background-color .2s ease;
+}
+.member-alt:hover { color: #fff; border-color: rgba(69, 216, 255, .5); background: rgba(255, 255, 255, .05); }
+.member-terms {
+  margin-top: 14px; font-size: 11.5px; line-height: 1.5;
+  color: rgba(255, 255, 255, .5); text-align: center;
+}
+
+/* The hero badges get tighter now the card shares the row. */
+@media (min-width: 1041px) {
+  .hero-badges { gap: 14px 24px; padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
+  .badge > span:last-child { max-width: 112px; font-size: 10px; }
+}
+
+/* ==========================================================================
+   Pricing plans
+   ========================================================================== */
+.plan-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 2.2vw, 26px); align-items: start;
+  margin-bottom: clamp(30px, 3.6vw, 46px);
+}
+@media (max-width: 860px) { .plan-grid { grid-template-columns: 1fr; max-width: 520px; margin-inline: auto; } }
+
+.plan {
+  position: relative; isolation: isolate;
+  display: flex; flex-direction: column;
+  padding: clamp(26px, 3vw, 36px) clamp(22px, 2.4vw, 30px);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .13);
+  box-shadow: 0 18px 44px -22px rgba(0, 0, 0, .85);
+  transition: transform .24s cubic-bezier(.2,.8,.3,1), border-color .24s ease, box-shadow .24s ease;
+}
+.plan:hover { transform: translateY(-5px); border-color: rgba(69, 216, 255, .4); }
+.plan-member {
+  background: linear-gradient(180deg, rgba(33, 196, 240, .14) 0%, rgba(255, 255, 255, .035) 58%);
+  border-color: rgba(69, 216, 255, .45);
+  box-shadow: 0 26px 60px -26px rgba(0, 0, 0, .9), 0 0 44px -14px rgba(33, 196, 240, .45);
+}
+.plan-flag {
+  position: absolute; top: -13px; left: 50%; translate: -50% 0; z-index: 2;
+  padding: 6px 16px; border-radius: 999px; white-space: nowrap;
+  font-family: var(--font-display); font-style: italic; font-stretch: 110%;
+  font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: #041624;
+  background: linear-gradient(180deg, var(--cyan-300), var(--cyan-500));
+  box-shadow: 0 8px 20px -6px rgba(14, 165, 212, .8);
+}
+.plan-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.plan-ic {
+  display: grid; place-items: center; flex: 0 0 auto;
+  width: 46px; height: 46px; border-radius: 14px; font-size: 22px; color: var(--cyan-400);
+  background: rgba(33, 196, 240, .14); border: 1px solid rgba(69, 216, 255, .3);
+}
+.plan-name {
+  font-family: var(--font-display); font-weight: 900; font-style: italic; font-stretch: 116%;
+  font-size: clamp(19px, 2.1vw, 24px); text-transform: uppercase; color: #fff;
+}
+.plan-tag { font-size: 13px; color: rgba(255, 255, 255, .55); margin-top: 3px; }
+.plan-figure {
+  display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
+  padding: 16px 0 18px; margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+.plan-amount {
+  font-family: var(--font-display); font-weight: 900; font-style: italic; font-stretch: 118%;
+  font-size: clamp(42px, 5vw, 58px); line-height: 1; color: var(--cyan-300);
+}
+.plan-amount-alt { color: #fff; }
+.plan-per, .plan-from {
+  font-size: 11px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .5);
+}
+.plan-points { display: grid; gap: 11px; margin-bottom: 24px; flex: 1; }
+.plan-points li { display: flex; align-items: flex-start; gap: 11px; font-size: 14px; line-height: 1.5; color: rgba(255, 255, 255, .8); }
+.plan-points .ic { font-size: 16px; margin-top: 2px; stroke-width: 2.6; color: var(--cyan-400); flex: 0 0 auto; }
+
+/* Half-vehicle options: deliberately quieter than the two plans above. */
+.halves {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 28px;
+  align-items: center;
+  padding: clamp(20px, 2.4vw, 28px) clamp(20px, 2.4vw, 30px);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .03);
+  border: 1px dashed rgba(255, 255, 255, .2);
+  margin-bottom: clamp(30px, 3.6vw, 46px);
+}
+@media (max-width: 720px) { .halves { grid-template-columns: 1fr; text-align: center; justify-items: center; } }
+.halves-copy h3 {
+  font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 5px;
+}
+.halves-copy p { font-size: 13.5px; color: rgba(255, 255, 255, .58); }
+.halves-options { display: flex; gap: 10px; flex-wrap: wrap; }
+.half {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 18px; border-radius: 999px;
+  background: rgba(3, 10, 21, .5);
+  border: 1px solid rgba(255, 255, 255, .18);
+  transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+.half:hover { border-color: var(--cyan-500); background: rgba(33, 196, 240, .12); transform: translateY(-2px); }
+.half-name { font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .85); }
+.half-price {
+  font-family: var(--font-display); font-weight: 800; font-style: italic; font-stretch: 112%;
+  font-size: 19px; color: var(--cyan-300);
+}
+.halves-note {
+  grid-column: 1 / -1; font-size: 13px; line-height: 1.55;
+  color: rgba(255, 255, 255, .55);
+  padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+.addon-featured { background: rgba(33, 196, 240, .06); border-radius: 12px; padding-inline: 12px; }
+
+/* Spray wax is new, so it gets a quiet nod the first time it is listed. */
+.detail-list .is-new .ic { color: var(--cyan-500); }
+.detail-note h3 { font-size: 14px; font-weight: 800; letter-spacing: .04em; margin-bottom: 7px; color: var(--ink-900); }
+.detail-subnote { margin-top: 9px; font-size: 13.5px; color: var(--ink-500); }
+
+/* ==========================================================================
+   Booking: plan choice, membership terms, contact
+   ========================================================================== */
+.choice-field { border: 0; padding: 0; margin: 0 0 22px; min-width: 0; }
+.choice-field legend {
+  padding: 0; margin-bottom: 11px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .7);
+}
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+@media (max-width: 520px) { .choices { grid-template-columns: 1fr; } }
+
+.choice { position: relative; display: block; }
+.choice input { position: absolute; opacity: 0; width: 0; height: 0; }
+.choice-box {
+  display: flex; flex-direction: column; gap: 4px; height: 100%;
+  padding: 13px 15px; border-radius: 14px; cursor: pointer;
+  background: rgba(3, 10, 21, .5);
+  border: 1.5px solid rgba(255, 255, 255, .16);
+  transition: border-color .18s ease, background-color .18s ease;
+}
+.choice-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.choice-name { font-size: 13.5px; font-weight: 700; color: rgba(255, 255, 255, .88); line-height: 1.25; }
+.choice-sub { font-size: 12px; color: rgba(255, 255, 255, .5); }
+.choice-flag {
+  flex: 0 0 auto; padding: 3px 8px; border-radius: 999px;
+  font-size: 8.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  background: rgba(33, 196, 240, .22); color: var(--cyan-300);
+}
+.choice input:checked + .choice-box {
+  border-color: var(--cyan-500);
+  background: rgba(33, 196, 240, .14);
+}
+.choice input:checked + .choice-box .choice-name { color: #fff; }
+.choice input:focus-visible + .choice-box { outline: 3px solid var(--cyan-500); outline-offset: 2px; }
+
+.check-wide { display: block; margin-top: 16px; }
+.check-wide span { width: 100%; justify-content: flex-start; }
+
+/* Terms shown only when the membership is selected. Enrolling is a
+   commitment, so this is explicit rather than buried in a link. */
+.member-terms-box {
+  margin-top: 4px; margin-bottom: 18px;
+  padding: 20px 20px 16px; border-radius: 16px;
+  background: rgba(33, 196, 240, .08);
+  border: 1px solid rgba(69, 216, 255, .32);
+}
+.member-terms-box[hidden] { display: none; }
+.member-terms-box h4 {
+  font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--cyan-300); margin-bottom: 12px;
+}
+.member-terms-box ul { display: grid; gap: 9px; margin-bottom: 4px; }
+.member-terms-box li {
+  position: relative; padding-left: 18px;
+  font-size: 13px; line-height: 1.55; color: rgba(255, 255, 255, .78);
+}
+.member-terms-box li::before {
+  content: ""; position: absolute; left: 3px; top: 8px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--cyan-400);
+}
+
+.slot-note { margin-top: -4px; font-size: 12.5px; color: rgba(255, 255, 255, .55); min-height: 1.2em; }
+.slot-note.is-warn { color: #ffd0a8; }
+
+.spanish-note {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-top: 22px; padding: 10px 16px; border-radius: 999px;
+  background: rgba(33, 196, 240, .1);
+  border: 1px solid rgba(69, 216, 255, .3);
+  font-size: 13px; font-weight: 600; color: var(--cyan-300);
+}
+.spanish-note .ic { font-size: 17px; }
+
+.book-contact { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.book-contact[hidden] { display: none; }
+.gallery-cta { text-align: center; margin-top: clamp(24px, 3vw, 36px); }
+.gallery-cta[hidden] { display: none; }
+
+.footer-spanish {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 13px; font-weight: 600; color: var(--cyan-300);
+}
+.footer-spanish .ic { font-size: 16px; }
+
+.mobile-menu-contact { display: flex; gap: 8px; }
+.mobile-menu-contact[hidden] { display: none; }
+.mm-contact {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 12px 8px; border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, .2); color: rgba(255, 255, 255, .82);
+  font-size: 12px; font-weight: 700;
+}
+.mm-contact .ic { font-size: 16px; color: var(--cyan-400); }
+
+/* ==========================================================================
+   Sticky call / text bar — phones only, and only once a number exists
+   ========================================================================== */
+.mobile-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+  display: none;
+  background: rgba(6, 18, 36, .94);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  gap: 8px;
+}
+.mobile-bar[hidden] { display: none !important; }
+@media (max-width: 760px) {
+  .mobile-bar { display: flex; }
+  /* Keep the bar from sitting on top of the last of the page. */
+  body { padding-bottom: 74px; }
+  .mobile-menu { z-index: 200; }
+}
+.mobile-bar-btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 46px; padding: 8px 10px; border-radius: 12px;
+  font-size: 12.5px; font-weight: 800; letter-spacing: .04em;
+  color: rgba(255, 255, 255, .85);
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .05);
+}
+.mobile-bar-btn .ic { font-size: 17px; color: var(--cyan-400); }
+.mobile-bar-cta {
+  flex: 1.5;
+  color: #041624; border-color: transparent;
+  background: linear-gradient(168deg, var(--cyan-300), var(--cyan-500));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+.mobile-bar-cta .ic { color: #041624; }
+
+/* ==========================================================================
+   Join page (in-person signup)
+   ========================================================================== */
+.join-page { min-height: 100vh; display: flex; align-items: center; padding: 40px 0; }
+.join-card {
+  width: 100%; max-width: 480px; margin-inline: auto;
+  padding: clamp(26px, 4vw, 38px);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(33, 196, 240, .14) 0%, rgba(6, 18, 36, .94) 50%);
+  border: 1px solid rgba(69, 216, 255, .4);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .95);
+}
+.join-logo { width: 150px; margin: 0 auto 20px; }
+.join-title {
+  font-family: var(--font-display); font-weight: 900; font-style: italic; font-stretch: 118%;
+  font-size: clamp(24px, 5vw, 32px); text-transform: uppercase; color: #fff;
+  text-align: center; margin-bottom: 8px;
+}
+.join-lead { text-align: center; font-size: 14.5px; color: rgba(255, 255, 255, .7); margin-bottom: 24px; }
+.join-notice {
+  margin-top: 18px; padding: 14px 16px; border-radius: 12px;
+  background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .14);
+  font-size: 12.5px; line-height: 1.55; color: rgba(255, 255, 255, .66);
+}
+.qr-panel { text-align: center; }
+.qr-frame {
+  display: inline-block; padding: 14px; border-radius: 18px; background: #fff;
+  box-shadow: 0 16px 40px -18px rgba(0, 0, 0, .8);
+}
+.qr-frame svg { display: block; width: min(240px, 60vw); height: auto; }
+.qr-url {
+  margin-top: 14px; font-size: 12.5px; word-break: break-all;
+  color: var(--cyan-300);
+}
+
+/* The headline shares the row with the membership card now, so it has to live
+   inside a narrower column than when it had the hero to itself. */
+@media (min-width: 1041px) {
+  .hero-grid .hero-content h1 { font-size: clamp(42px, 4.9vw, 72px); }
+  .hero-grid .hero-sub { font-size: clamp(15px, 1.5vw, 17px); margin-bottom: 26px; }
+  .hero { padding-top: calc(var(--header-h) + 40px); }
+}
+/* Below the split, the headline gets the full width back. */
+@media (max-width: 1040px) {
+  .member-card { max-width: 480px; margin-inline: auto; width: 100%; }
+  .hero-grid .hero-content h1 { font-size: clamp(44px, 9vw, 86px); }
+  .hero-badges { gap: 14px 22px; padding-bottom: 24px; margin-bottom: 26px; }
+}
