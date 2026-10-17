@@ -570,6 +570,24 @@
     input.addEventListener("change", syncPlan);
   });
 
+  /* The two half-vehicle options stay tucked away until asked for, so the form
+     opens with two choices instead of four. */
+  var choiceMore = document.getElementById("choiceMore");
+  var halfChoices = form ? Array.prototype.slice.call(form.querySelectorAll(".choice-half")) : [];
+
+  function showHalves(show) {
+    halfChoices.forEach(function (el) { el.hidden = !show; });
+    if (choiceMore) choiceMore.hidden = show;
+  }
+
+  if (choiceMore) {
+    choiceMore.addEventListener("click", function () {
+      showHalves(true);
+      var first = halfChoices[0] && halfChoices[0].querySelector("input");
+      if (first) first.focus();
+    });
+  }
+
   document.addEventListener("click", function (e) {
     var trigger = e.target.closest("[data-choice]");
     if (!trigger || !form) return;
@@ -577,6 +595,7 @@
     var input = planInputs.find(function (i) { return i.value === wanted; });
     if (!input) return;
     input.checked = true;
+    if (wanted === "interiorOnly" || wanted === "exteriorOnly") showHalves(true);
     syncPlan();
     // The anchor still scrolls to #book; just make sure step one is showing.
     if (typeof goTo === "function") goTo(0, false);

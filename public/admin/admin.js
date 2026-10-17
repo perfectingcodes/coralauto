@@ -53,7 +53,7 @@ const STATUS_LABEL = { new: "New lead", quoted: "Quoted", scheduled: "Scheduled"
 const PLATFORMS = ["Instagram", "Facebook", "TikTok", "Google", "Nextdoor", "YouTube", "Other"];
 const POST_STATUSES = ["idea", "drafted", "scheduled", "posted"];
 const PAYMENT_METHODS = ["Cash", "Zelle", "Venmo", "Cash App", "Card", "Check", "Other"];
-const CUSTOMER_TAGS = ["New", "Repeat", "VIP", "Fleet", "Needs follow-up", "Referred"];
+const CUSTOMER_TAGS = ["Member", "New", "Repeat", "VIP", "Fleet", "Needs follow-up", "Referred"];
 
 /* ---------- state ---------- */
 const S = {
@@ -65,6 +65,7 @@ const S = {
     jobsStatus: "all",
     jobsQuery: "",
     calMonth: today().slice(0, 7),
+    calCrew: "all",
     socialTab: "schedule",
     socialPlatform: "all",
     tasksTab: "open",
@@ -179,7 +180,9 @@ function renderField(f, v) {
   const span = f.span === 2 ? " span-2" : "";
   const req = f.required ? "" : "";
   const label = `<span class="field__label">${esc(f.label)}${f.required ? "" : f.optional === false ? "" : " <small>(optional)</small>"}</span>`;
-  const hint = f.hint ? `<span class="field__hint">${esc(f.hint)}</span>` : "";
+  // hint may be a string or a function, like options and default.
+  const hintText = typeof f.hint === "function" ? f.hint() : f.hint;
+  const hint = hintText ? `<span class="field__hint">${esc(hintText)}</span>` : "";
   const err = `<span class="field__error" data-error hidden></span>`;
   let control = "";
   switch (f.type || "text") {
@@ -340,10 +343,22 @@ const FIELDS = {
     { key: "price", label: "Price", type: "money", default: settings().services[0] && settings().services[0].basePrice, hint: "Confirmed with the customer before work starts" },
     { key: "addons", label: "Add-ons", type: "chips", span: 2, options: () => settings().addons.map((a) => a.name) },
     { key: "seats", label: "Seats to shampoo", type: "number", showIf: (v) => (v.addons || []).some((a) => /seat/i.test(a)) },
-    { key: "assignedTo", label: "Assigned to", type: "select", options: teamOptions, showIf: () => teamOptions().length > 0 },
+    { key: "assignedTo", label: "Crew", type: "select", options: teamOptions, placeholder: "Nobody assigned", hint: () => teamOptions().length ? "" : "Add crew under Settings → Team first" },
     { key: "paymentMethod", label: "Payment method", type: "select", options: PAYMENT_METHODS },
     { key: "source", label: "Lead source", type: "select", options: settings().leadSources },
     { key: "notes", label: "Notes", type: "textarea", span: 2, placeholder: "Condition, access instructions, anything the crew should know" }
+  ],
+  memberships: () => [
+    { key: "customerId", label: "Customer", type: "select", required: true, options: () => [{ value: "__new", label: "+ New customer" }].concat(customerOptions()), placeholder: "Choose a customer" },
+    { key: "newName", label: "Customer name", required: true, showIf: (v) => v.customerId === "__new" },
+    { key: "newPhone", label: "Phone", type: "tel", showIf: (v) => v.customerId === "__new" },
+    { key: "newEmail", label: "Email", type: "email", showIf: (v) => v.customerId === "__new" },
+    { key: "vehicle", label: "Enrolled vehicle", required: true, placeholder: "Year, make, model", hint: "One vehicle per membership" },
+    { key: "status", label: "Status", type: "select", required: true, options: MEMBERSHIP_STATUSES.map((x) => ({ value: x, label: MEMBERSHIP_LABEL[x] })), default: "requested" },
+    { key: "monthlyPrice", label: "Monthly price", type: "money", required: true, default: () => (settings().services.find((x) => x.recurring) || {}).basePrice || 100, hint: "Counts toward MRR once the status is Active" },
+    { key: "startedAt", label: "Started on", type: "date", showIf: (v) => v.status === "active" || v.status === "paused" },
+    { key: "billingDay", label: "Bills on day of month", type: "number", placeholder: "19", showIf: (v) => v.status === "active", hint: "1 to 28" },
+    { key: "notes", label: "Notes", type: "textarea", span: 2, placeholder: "How they pay, vehicle quirks, anything worth remembering" }
   ],
   directory: () => [
     { key: "name", label: "Business / person", required: true },
@@ -394,12 +409,12 @@ const FIELDS = {
     { key: "priority", label: "Priority", type: "select", options: ["low", "medium", "high"].map((p) => ({ value: p, label: title(p) })), default: "medium" },
     { key: "jobId", label: "Related job", type: "select", options: jobOptions, default: ctx && ctx.jobId },
     { key: "customerId", label: "Related customer", type: "select", options: customerOptions, default: ctx && ctx.customerId },
-    { key: "assignedTo", label: "Assigned to", type: "select", options: teamOptions, showIf: () => teamOptions().length > 0 },
+    { key: "assignedTo", label: "Crew", type: "select", options: teamOptions, placeholder: "Nobody assigned", hint: () => teamOptions().length ? "" : "Add crew under Settings → Team first" },
     { key: "notes", label: "Notes", type: "textarea", span: 2 }
   ]
 };
 
-const LABELS = { customers: "customer", jobs: "job", directory: "directory listing", posts: "post", expenses: "expense", inventory: "item", tasks: "task" };
+const LABELS = { customers: "customer", jobs: "job", memberships: "membership", directory: "directory listing", posts: "post", expenses: "expense", inventory: "item", tasks: "task" };
 
 /** Open the standard create/edit dialog for any collection. */
 function editRecord(collection, doc, ctx, after) {
@@ -415,6 +430,7 @@ function editRecord(collection, doc, ctx, after) {
     onSubmit: async (vals) => {
       let saved;
       if (collection === "jobs") saved = await saveJob(vals, doc);
+      else if (collection === "memberships") saved = await saveMembership(vals, doc);
       else saved = isNew ? await createDoc(collection, vals) : await patchDoc(collection, doc.id, vals);
       toast(isNew ? `${title(LABELS[collection])} added` : "Saved");
       refreshActivity().then(render);
@@ -455,6 +471,55 @@ async function saveJob(vals, existing) {
   return existing ? patchDoc("jobs", existing.id, doc) : createDoc("jobs", doc);
 }
 
+/**
+ * Memberships can create their customer inline too, and they keep the customer
+ * record in step: the CRM is where you look someone up, so it has to say
+ * whether they are a member.
+ */
+async function saveMembership(vals, existing) {
+  const doc = Object.assign({}, vals);
+
+  if (doc.customerId === "__new") {
+    const customer = await createDoc("customers", {
+      name: doc.newName,
+      phone: doc.newPhone || "",
+      email: doc.newEmail || "",
+      vehicles: doc.vehicle ? [doc.vehicle] : [],
+      tags: ["Member"],
+      source: "Walk-up",
+      notes: ""
+    });
+    doc.customerId = customer.id;
+  }
+  delete doc.newName; delete doc.newPhone; delete doc.newEmail;
+
+  if (doc.status === "active" && !doc.startedAt) doc.startedAt = today();
+  if (doc.status === "cancelled" && !doc.cancelledAt) doc.cancelledAt = today();
+
+  const saved = existing
+    ? await patchDoc("memberships", existing.id, doc)
+    : await createDoc("memberships", doc);
+
+  const customer = getDoc("customers", doc.customerId);
+  if (customer) {
+    const isMember = doc.status === "active" || doc.status === "paused";
+    const tags = new Set(customer.tags || []);
+    if (isMember) tags.add("Member"); else tags.delete("Member");
+
+    const vehicles = new Set(customer.vehicles || []);
+    if (doc.vehicle) vehicles.add(doc.vehicle);
+
+    await patchDoc("customers", customer.id, {
+      isMember,
+      membershipId: isMember ? saved.id : null,
+      tags: [...tags],
+      vehicles: [...vehicles]
+    });
+  }
+
+  return saved;
+}
+
 /* ---------- routing ---------- */
 function parseHash() {
   const raw = location.hash.replace(/^#\/?/, "");
@@ -469,21 +534,22 @@ window.addEventListener("hashchange", () => { S.route = parseHash(); render(); w
 const NAV = [
   { group: "Overview" },
   { name: "dashboard", label: "Dashboard", icon: "grid" },
-  { name: "leads", label: "Leads", icon: "inbox", badge: () => col("jobs").filter((j) => j.status === "new").length },
   { name: "calendar", label: "Calendar", icon: "calendar" },
-  { group: "Operations" },
-  { name: "jobs", label: "Jobs", icon: "briefcase" },
+  { group: "Customers" },
+  { name: "leads", label: "Leads", icon: "inbox", badge: () => col("jobs").filter((j) => j.status === "new").length },
   { name: "customers", label: "Customers", icon: "users" },
+  { name: "subscriptions", label: "Subscriptions", icon: "repeat", badge: () => col("memberships").filter((m) => m.status === "requested").length },
+  { group: "Work" },
+  { name: "jobs", label: "Jobs", icon: "briefcase" },
   { name: "tasks", label: "Tasks", icon: "check-square", badge: () => col("tasks").filter((t) => !t.done && t.due && t.due < today()).length },
-  { group: "Growth" },
-  { name: "social", label: "Social media", icon: "megaphone" },
-  { name: "directory", label: "Directory", icon: "book" },
   { group: "Business" },
   { name: "finance", label: "Finance", icon: "dollar" },
   { name: "inventory", label: "Inventory", icon: "box" },
+  { name: "social", label: "Social media", icon: "megaphone" },
+  { name: "directory", label: "Directory", icon: "book" },
   { name: "settings", label: "Settings", icon: "settings" }
 ];
-const PAGE_TITLES = { dashboard: "Dashboard", leads: "Leads", calendar: "Calendar", jobs: "Jobs", customers: "Customers", tasks: "Tasks", social: "Social media", directory: "Directory", finance: "Finance", inventory: "Inventory", settings: "Settings", search: "Search" };
+const PAGE_TITLES = { dashboard: "Dashboard", leads: "Leads", calendar: "Calendar", jobs: "Jobs", customers: "Customers", subscriptions: "Subscriptions", tasks: "Tasks", social: "Social media", directory: "Directory", finance: "Finance", inventory: "Inventory", settings: "Settings", search: "Search" };
 
 function renderNav() {
   $("#nav").innerHTML = NAV.map((n) => {
@@ -610,6 +676,7 @@ function jobCard(j) {
       <div class="jobcard__meta">
         ${j.vehicle ? `<span>${icon("car")}${esc(j.vehicle)}</span>` : ""}
         ${j.date ? `<span>${icon("calendar")}${fmtDate(j.date)}${j.time ? ` · ${fmtTime(j.time)}` : ""}</span>` : `<span class="muted">${icon("calendar")}No date</span>`}
+        ${j.assignedTo ? `<span>${icon("users")}${esc(j.assignedTo)}</span>` : ""}
       </div>
       <div class="jobcard__foot">
         ${addons ? `<span class="pill">${addons} add-on${addons > 1 ? "s" : ""}</span>` : ""}
@@ -626,6 +693,27 @@ function jobCard(j) {
 /* ==========================================================================
    Views
    ========================================================================== */
+/* Membership status. Nothing here charges a card — "active" means you are
+   collecting the monthly payment, however you collect it. */
+const MEMBERSHIP_STATUSES = ["requested", "active", "paused", "cancelled"];
+const MEMBERSHIP_LABEL = {
+  requested: "Requested",
+  active: "Active",
+  paused: "Paused",
+  cancelled: "Cancelled"
+};
+const MEMBERSHIP_PILL = { requested: "new", active: "paid", paused: "high", cancelled: "muted" };
+
+/** Monthly recurring revenue: what the active memberships bill each month. */
+const mrr = () => sum(col("memberships").filter((m) => m.status === "active"), (m) => Number(m.monthlyPrice) || 0);
+
+const ordinal = (n) => {
+  const v = Number(n);
+  if (!v) return "";
+  const s2 = ["th", "st", "nd", "rd"][(v % 100 - 20) % 10] || ["th", "st", "nd", "rd"][v % 100] || "th";
+  return v + s2;
+};
+
 const V = {};
 
 /* ---------- dashboard ---------- */
@@ -645,6 +733,41 @@ V.dashboard = () => {
   const posts = col("posts").filter((p) => p.date && p.date >= t && p.date <= weekEnd && p.status !== "posted").sort(by("date"));
   const activity = col("activity").slice(-8).reverse();
   const change = prev ? Math.round(((rev - prev) / prev) * 100) : null;
+  const monthly = mrr();
+  const activeMembers = col("memberships").filter((m) => m.status === "active").length;
+  const pendingMembers = col("memberships").filter((m) => m.status === "requested").length;
+
+  // Everything waiting on a decision, newest problem first.
+  const overdueTasks = col("tasks").filter((x) => !x.done && x.due && x.due < t);
+  const todo = [
+    ...col("memberships").filter((m) => m.status === "requested").map((m) => {
+      const c = getDoc("customers", m.customerId);
+      return {
+        title: esc((c && c.name) || "Membership request"),
+        sub: `Wants the monthly plan${m.vehicle ? ` · ${esc(m.vehicle)}` : ""}`,
+        tag: "Membership", tone: "new",
+        open: ` data-open="memberships" data-id="${m.id}"`
+      };
+    }),
+    ...leads.slice(0, 5).map((j) => ({
+      title: esc(j.customerName || "New lead"),
+      sub: `${esc(j.service || "Enquiry")}${j.date ? ` · wants ${fmtDate(j.date)}` : ""}`,
+      tag: "Lead", tone: "new",
+      open: ` data-open="jobs" data-id="${j.id}"`
+    })),
+    ...overdueTasks.slice(0, 4).map((x) => ({
+      title: esc(x.title || "Task"),
+      sub: `Due ${fmtDate(x.due)}`,
+      tag: "Overdue", tone: "high",
+      open: ` data-open="tasks" data-id="${x.id}"`
+    })),
+    ...lowStock.slice(0, 4).map((i) => ({
+      title: esc(i.name),
+      sub: `${i.qty} ${esc(i.unit || "")} left · reorder below ${i.reorderAt}`,
+      tag: "Reorder", tone: "high",
+      open: ` data-open="inventory" data-id="${i.id}"`
+    }))
+  ].slice(0, 10);
 
   // Group upcoming into agenda days.
   const days = {};
@@ -654,8 +777,9 @@ V.dashboard = () => {
     <div class="grid grid--4" style="margin-bottom:18px">
       <div class="card stat">${icon("dollar", "stat__icon")}<span class="stat__label">Revenue · ${MONTHS[Number(thisMonth.slice(5)) - 1]}</span><span class="stat__value">${money(rev)}</span>
         <span class="stat__sub ${change == null ? "" : change >= 0 ? "up" : "down"}">${change == null ? `${money(prev)} last month` : `${change >= 0 ? "+" : ""}${change}% vs last month`}</span></div>
+      <div class="card stat">${icon("repeat", "stat__icon")}<span class="stat__label">Recurring · per month</span><span class="stat__value">${money(monthly)}</span>
+        <span class="stat__sub">${activeMembers} member${activeMembers === 1 ? "" : "s"}${pendingMembers ? ` · ${pendingMembers} waiting` : ""}</span></div>
       <div class="card stat">${icon("briefcase", "stat__icon")}<span class="stat__label">Jobs next 7 days</span><span class="stat__value">${upcoming.length}</span><span class="stat__sub">${money(sum(upcoming, jobTotal))} booked</span></div>
-      <div class="card stat">${icon("inbox", "stat__icon")}<span class="stat__label">New leads</span><span class="stat__value">${leads.length}</span><span class="stat__sub">${leads.length ? "Waiting for a reply" : "Inbox is clear"}</span></div>
       <div class="card stat">${icon("clock", "stat__icon")}<span class="stat__label">Awaiting payment</span><span class="stat__value">${money(sum(outstanding, jobTotal))}</span><span class="stat__sub">${outstanding.length} completed job${outstanding.length === 1 ? "" : "s"}</span></div>
     </div>
 
@@ -670,13 +794,6 @@ V.dashboard = () => {
         </section>
 
         <section class="card">
-          <div class="card__head"><h3>Leads to reply to</h3><span class="spacer"></span><a class="btn btn--ghost btn--sm" href="#/leads">All leads ${icon("chevron")}</a></div>
-          <div class="list">
-            ${leads.length ? leads.slice(0, 5).map(leadRow).join("") : emptyState("inbox", "No new leads", "Website booking requests land here automatically.")}
-          </div>
-        </section>
-
-        <section class="card">
           <div class="card__head"><h3>Recent activity</h3></div>
           <div class="timeline">
             ${activity.length ? activity.map(activityRow).join("") : `<div class="empty">Nothing yet.</div>`}
@@ -685,32 +802,30 @@ V.dashboard = () => {
       </div>
 
       <div class="stack">
+        <!-- One queue instead of four cards: leads, membership requests, overdue
+             tasks and reorders, in the order they actually need dealing with. -->
         <section class="card">
-          <div class="card__head"><h3>Tasks</h3><span class="spacer"></span><button class="btn btn--ghost btn--sm" type="button" data-new="tasks">${icon("plus")}Task</button></div>
+          <div class="card__head"><h3>Needs you</h3><span class="spacer"></span>${todo.length ? `<span class="muted">${todo.length}</span>` : ""}</div>
           <div class="list">
-            ${tasks.length ? tasks.map(taskRow).join("") : `<div class="empty">All caught up.</div>`}
+            ${todo.length ? todo.map((t) => `
+              <div class="list__item is-link"${t.open}>
+                <div class="list__main"><div class="list__title">${t.title}</div><div class="list__sub">${t.sub}</div></div>
+                ${pill(t.tone, t.tag)}
+              </div>`).join("") : emptyState("check", "Nothing waiting", "Leads, membership requests, overdue tasks and low stock all land here.")}
           </div>
-          ${col("tasks").filter((x) => !x.done).length > 6 ? `<a class="card__foot" href="#/tasks" style="display:block">View all tasks →</a>` : ""}
+          ${todo.length ? `<div class="card__foot" style="display:flex;gap:10px"><a class="btn btn--ghost btn--sm" href="#/leads">Leads</a><a class="btn btn--ghost btn--sm" href="#/subscriptions">Subscriptions</a><a class="btn btn--ghost btn--sm" href="#/tasks">Tasks</a></div>` : ""}
         </section>
 
         <section class="card">
           <div class="card__head"><h3>Social · this week</h3><span class="spacer"></span><a class="btn btn--ghost btn--sm" href="#/social">Planner ${icon("chevron")}</a></div>
           <div class="list">
-            ${posts.length ? posts.slice(0, 5).map((p) => `
+            ${posts.length ? posts.slice(0, 4).map((p) => `
               <div class="list__item is-link" data-open="posts" data-id="${p.id}">
                 <div class="list__main"><div class="list__title">${esc(p.title)}</div><div class="list__sub">${platformPill(p.platform)} ${fmtDate(p.date)}${p.time ? " · " + fmtTime(p.time) : ""}</div></div>
                 ${pill(p.status, title(p.status))}
               </div>`).join("") : `<div class="empty">No posts planned for this week.</div>`}
           </div>
         </section>
-
-        ${lowStock.length ? `
-        <section class="card">
-          <div class="card__head"><h3>Low stock</h3><span class="spacer"></span><a class="btn btn--ghost btn--sm" href="#/inventory">Inventory ${icon("chevron")}</a></div>
-          <div class="list">
-            ${lowStock.map((i) => `<div class="list__item is-link" data-open="inventory" data-id="${i.id}"><div class="list__main"><div class="list__title">${esc(i.name)}</div><div class="list__sub">${i.qty} ${esc(i.unit || "")} left · reorder below ${i.reorderAt}</div></div><span class="pill pill--high">Reorder</span></div>`).join("")}
-          </div>
-        </section>` : ""}
       </div>
     </div>`;
 };
@@ -731,7 +846,7 @@ function jobAgendaItem(j) {
       <div class="avatar avatar--sm">${initials(j.customerName)}</div>
       <div class="list__main">
         <div class="list__title">${esc(j.customerName)} ${pill(j.status)}</div>
-        <div class="list__sub">${icon("car")} ${esc(j.vehicle || "")}${j.address ? ` &nbsp;${icon("pin")} ${esc(j.address)}` : ""}</div>
+        <div class="list__sub">${icon("car")} ${esc(j.vehicle || "")}${j.address ? ` &nbsp;${icon("pin")} ${esc(j.address)}` : ""}${j.assignedTo ? ` &nbsp;${icon("users")} ${esc(j.assignedTo)}` : ""}</div>
       </div>
       <div class="list__aside"><strong>${j.time ? fmtTime(j.time) : "—"}</strong>${money(j.price)}</div>
     </div>`;
@@ -776,14 +891,57 @@ const platformPill = (p) => `<span class="platform platform--${esc(p || "Other")
 V.leads = () => {
   const leads = col("jobs").filter((j) => j.status === "new").sort(by("receivedAt", -1));
   const quoted = col("jobs").filter((j) => j.status === "quoted").sort(by("updatedAt", -1));
+  const memberRequests = col("memberships").filter((m) => m.status === "requested");
+
+  const ageHours = (j) => {
+    const when = j.receivedAt || j.createdAt;
+    if (!when) return 0;
+    return (Date.now() - new Date(when).getTime()) / 3600000;
+  };
+
+  // Oldest first within a bucket: the one that has been waiting longest is
+  // the one that needs calling.
+  const buckets = [
+    { key: "today", title: "Today", items: [] },
+    { key: "week", title: "Earlier this week", items: [] },
+    { key: "old", title: "Waiting more than a week", items: [], warn: true }
+  ];
+  leads.forEach((j) => {
+    const h = ageHours(j);
+    if (h < 24) buckets[0].items.push(j);
+    else if (h < 24 * 7) buckets[1].items.push(j);
+    else buckets[2].items.push(j);
+  });
+
+  const stale = leads.filter((j) => ageHours(j) > 48).length;
+  const oldest = leads.length ? Math.round(ageHours(leads[leads.length - 1])) : 0;
+
   return `
-    <div class="page-head"><h2>New requests</h2><span class="pill pill--new">${leads.length}</span><span class="spacer"></span><button class="btn btn--primary" type="button" data-new="jobs" data-ctx-status="new">${icon("plus")}Add lead</button>
-      <p>Booking requests from the website land here. Call or text, confirm the price, then move the job to Quoted or Scheduled.</p></div>
-    <div class="stack">
-      ${leads.length ? leads.map(leadCard).join("") : `<div class="card">${emptyState("inbox", "No new requests", "You're all caught up. New website bookings appear here the moment they come in.")}</div>`}
+    <div class="grid grid--3" style="margin-bottom:18px">
+      <div class="card stat">${icon("inbox", "stat__icon")}<span class="stat__label">New requests</span><span class="stat__value">${leads.length}</span>
+        <span class="stat__sub">${leads.length ? `oldest waiting ${oldest < 24 ? `${oldest}h` : `${Math.round(oldest / 24)}d`}` : "Inbox is clear"}</span></div>
+      <div class="card stat">${icon("clock", "stat__icon")}<span class="stat__label">Over 48 hours</span><span class="stat__value">${stale}</span>
+        <span class="stat__sub">${stale ? "Call these first" : "Nothing going cold"}</span></div>
+      <div class="card stat">${icon("repeat", "stat__icon")}<span class="stat__label">Membership requests</span><span class="stat__value">${memberRequests.length}</span>
+        <span class="stat__sub">${memberRequests.length ? `<a href="#/subscriptions">Open subscriptions →</a>` : "None waiting"}</span></div>
     </div>
+
+    <div class="toolbar">
+      <span class="muted">Website requests land here. Call or text, confirm the price, then move the job to Quoted or Scheduled.</span>
+      <span class="spacer"></span>
+      <button class="btn btn--primary" type="button" data-new="jobs" data-ctx-status="new">${icon("plus")}Add lead</button>
+    </div>
+
+    ${leads.length ? buckets.filter((b) => b.items.length).map((b) => `
+      <div class="page-head" style="margin-top:8px">
+        <h2 style="font-size:15px">${b.title}</h2>
+        <span class="pill pill--${b.warn ? "high" : "new"}">${b.items.length}</span>
+      </div>
+      <div class="stack">${b.items.map(leadCard).join("")}</div>
+    `).join("") : `<div class="card">${emptyState("inbox", "No new requests", "You're all caught up. New website bookings appear here the moment they come in.")}</div>`}
+
     ${quoted.length ? `
-    <div class="page-head" style="margin-top:30px"><h2>Waiting on the customer</h2><span class="pill pill--quoted">${quoted.length}</span><p>Quotes sent, not yet booked. Follow up after a day or two.</p></div>
+    <div class="page-head" style="margin-top:30px"><h2 style="font-size:15px">Waiting on the customer</h2><span class="pill pill--quoted">${quoted.length}</span><p>Quotes sent, not yet booked. Follow up after a day or two.</p></div>
     <div class="card list">${quoted.map((j) => `
       <div class="list__item is-link" data-open="jobs" data-id="${j.id}">
         <div class="avatar avatar--sm">${initials(j.customerName)}</div>
@@ -868,19 +1026,20 @@ V.jobs = () => {
   jobs.sort((a, b) => (b.date || "") > (a.date || "") ? 1 : (b.date || "") < (a.date || "") ? -1 : (b.createdAt > a.createdAt ? 1 : -1));
   return head + `
     <div class="card"><div class="table-wrap"><table class="table">
-      <thead><tr><th>Customer</th><th>Vehicle</th><th>Date</th><th>Status</th><th>Add-ons</th><th class="num">Price</th><th></th></tr></thead>
+      <thead><tr><th>Customer</th><th>Vehicle</th><th>Date</th><th>Crew</th><th>Status</th><th>Add-ons</th><th class="num">Price</th><th></th></tr></thead>
       <tbody>${jobs.length ? jobs.map((j) => `
         <tr class="is-link" data-open="jobs" data-id="${j.id}">
           <td><strong>${esc(j.customerName)}</strong><span class="sub">${esc(j.phone || "")}</span></td>
           <td>${esc(j.vehicle)}</td>
           <td>${j.date ? fmtDate(j.date) : "<span class='muted'>—</span>"}<span class="sub">${j.time ? fmtTime(j.time) : ""}</span></td>
+          <td class="muted">${j.assignedTo ? esc(j.assignedTo) : "—"}</td>
           <td>${pill(j.status)}${j.paid ? "" : j.status === "completed" ? ` <span class="pill pill--high">Unpaid</span>` : ""}</td>
           <td class="muted">${(j.addons || []).join(", ") || "—"}</td>
           <td class="num"><strong>${money(j.price)}</strong></td>
           <td class="actions"><button class="iconbtn" type="button" data-edit="jobs" data-id="${j.id}" title="Edit">${icon("edit")}</button></td>
-        </tr>`).join("") : `<tr><td colspan="7">${emptyState("briefcase", "No jobs match", "")}</td></tr>`}
+        </tr>`).join("") : `<tr><td colspan="8">${emptyState("briefcase", "No jobs match", "")}</td></tr>`}
       </tbody>
-      ${jobs.length ? `<tfoot><tr><td colspan="5">${jobs.length} job${jobs.length === 1 ? "" : "s"}</td><td class="num">${money(sum(jobs, jobTotal))}</td><td></td></tr></tfoot>` : ""}
+      ${jobs.length ? `<tfoot><tr><td colspan="6">${jobs.length} job${jobs.length === 1 ? "" : "s"}</td><td class="num">${money(sum(jobs, jobTotal))}</td><td></td></tr></tfoot>` : ""}
     </table></div></div>`;
 };
 
@@ -1015,7 +1174,13 @@ V.calendar = () => {
   const first = new Date(y, m - 1, 1);
   const start = new Date(first); start.setDate(1 - first.getDay());
   const t = today();
-  const jobs = col("jobs"), posts = col("posts"), tasks = col("tasks");
+  const crewFilter = S.ui.calCrew || "all";
+  const allJobs = col("jobs");
+  // Filtering by crew hides posts and tasks too: you are looking at one
+  // person's day, not the whole business.
+  const jobs = crewFilter === "all" ? allJobs : allJobs.filter((j) => (j.assignedTo || "") === crewFilter);
+  const posts = crewFilter === "all" ? col("posts") : [];
+  const tasks = crewFilter === "all" ? col("tasks") : [];
   const cells = [];
   for (let i = 0; i < 42; i++) {
     const d = new Date(start); d.setDate(start.getDate() + i);
@@ -1023,7 +1188,7 @@ V.calendar = () => {
     const dayJobs = jobs.filter((j) => j.date === key && j.status !== "cancelled").sort(by("time"));
     const dayPosts = posts.filter((p) => p.date === key);
     const dayTasks = tasks.filter((x) => x.due === key && !x.done);
-    const evs = dayJobs.map((j) => `<div class="cal__ev cal__ev--job cal__ev--${j.status}" data-open="jobs" data-id="${j.id}" title="${esc(j.customerName)} — ${esc(j.vehicle)}">${icon("car")}<span class="label">${j.time ? fmtTime(j.time).replace(":00", "") + " " : ""}${esc(j.customerName)}</span></div>`)
+    const evs = dayJobs.map((j) => `<div class="cal__ev cal__ev--job cal__ev--${j.status}" data-open="jobs" data-id="${j.id}" title="${esc(j.customerName)} — ${esc(j.vehicle)}${j.assignedTo ? ` — ${esc(j.assignedTo)}` : ""}">${icon("car")}<span class="label">${j.time ? fmtTime(j.time).replace(":00", "") + " " : ""}${esc(j.customerName)}</span></div>`)
       .concat(dayPosts.map((p) => `<div class="cal__ev cal__ev--post" data-open="posts" data-id="${p.id}" title="${esc(p.title)}">${icon("megaphone")}<span class="label">${esc(p.title)}</span></div>`))
       .concat(dayTasks.map((x) => `<div class="cal__ev cal__ev--task${key < t ? " is-overdue" : ""}" data-open="tasks" data-id="${x.id}" title="${esc(x.title)}">${icon("check-square")}<span class="label">${esc(x.title)}</span></div>`));
     cells.push(`<div class="cal__day${d.getMonth() !== m - 1 ? " is-other" : ""}${key === t ? " is-today" : ""}" data-day="${key}">
@@ -1038,6 +1203,11 @@ V.calendar = () => {
       <button class="iconbtn" type="button" data-cal="-1" aria-label="Previous month">${icon("back")}</button>
       <h2 style="font-size:20px;min-width:190px;text-align:center">${MONTHS[m - 1]} ${y}</h2>
       <button class="iconbtn" type="button" data-cal="1" aria-label="Next month">${icon("arrow")}</button>
+      ${teamOptions().length ? `<select class="field__select select-sm" data-calcrew aria-label="Filter by crew">
+        <option value="all">Whole team</option>
+        ${teamOptions().map((n) => `<option value="${esc(n)}"${crewFilter === n ? " selected" : ""}>${esc(n)}</option>`).join("")}
+        <option value=""${crewFilter === "" ? " selected" : ""}>Unassigned</option>
+      </select>` : ""}
       <button class="btn btn--ghost btn--sm" type="button" data-cal="today">Today</button>
       <span class="muted" style="font-size:13px">${monthJobs.length} job${monthJobs.length === 1 ? "" : "s"} · ${money(sum(monthJobs, jobTotal))}</span>
       <span class="spacer"></span>
@@ -1079,10 +1249,12 @@ V.customers = () => {
   }).sort((a, b) => b.value - a.value || (b.last > a.last ? 1 : -1));
   const total = col("customers").length;
   const repeat = col("customers").filter((c) => customerJobs(c.id).filter((j) => ["completed", "paid"].includes(j.status)).length > 1).length;
+  const members = col("memberships").filter((m) => m.status === "active").length;
 
   return `
-    <div class="grid grid--3" style="margin-bottom:18px">
+    <div class="grid grid--4" style="margin-bottom:18px">
       <div class="card stat">${icon("users", "stat__icon")}<span class="stat__label">Customers</span><span class="stat__value">${total}</span></div>
+      <div class="card stat">${icon("repeat", "stat__icon")}<span class="stat__label">Members</span><span class="stat__value">${members}</span><span class="stat__sub">${money(mrr())}/mo recurring</span></div>
       <div class="card stat">${icon("star", "stat__icon")}<span class="stat__label">Repeat customers</span><span class="stat__value">${repeat}</span><span class="stat__sub">${total ? Math.round(repeat / total * 100) : 0}% have booked twice or more</span></div>
       <div class="card stat">${icon("dollar", "stat__icon")}<span class="stat__label">Avg lifetime value</span><span class="stat__value">${money(total ? sum(rows, (r) => r.value) / total : 0)}</span></div>
     </div>
@@ -1096,7 +1268,7 @@ V.customers = () => {
       <thead><tr><th>Customer</th><th>Contact</th><th>Vehicles</th><th>Tags</th><th class="num">Jobs</th><th class="num">Lifetime</th><th>Last job</th></tr></thead>
       <tbody>${rows.length ? rows.map(({ c, jobs, value, last }) => `
         <tr class="is-link" data-open="customers" data-id="${c.id}">
-          <td><div style="display:flex;gap:10px;align-items:center"><div class="avatar avatar--sm">${initials(c.name)}</div><div><strong>${esc(c.name)}</strong><span class="sub">${esc(c.address || "")}</span></div></div></td>
+          <td><div style="display:flex;gap:10px;align-items:center"><div class="avatar avatar--sm">${initials(c.name)}</div><div><strong>${esc(c.name)}</strong>${c.isMember ? ` ${pill("paid", "Member")}` : ""}<span class="sub">${esc(c.address || "")}</span></div></div></td>
           <td>${esc(c.phone || "")}<span class="sub">${esc(c.email || "")}</span></td>
           <td class="muted">${(c.vehicles || []).join(", ") || "—"}</td>
           <td>${(c.tags || []).map((t) => `<span class="pill pill--tag">${esc(t)}</span>`).join(" ")}</td>
@@ -1335,6 +1507,74 @@ V.finance = () => {
         </div></section>
       </div>
     </div>`;
+};
+
+/* ---------- subscriptions ---------- */
+V.subscriptions = () => {
+  const all = col("memberships").slice();
+  const byStatus = (st) => all.filter((m) => m.status === st);
+  const active = byStatus("active");
+  const requested = byStatus("requested");
+  const paused = byStatus("paused");
+  const cancelled = byStatus("cancelled");
+
+  const monthly = mrr();
+  const perMember = active.length ? Math.round(monthly / active.length) : 0;
+
+  const customerName = (m) => {
+    const c = getDoc("customers", m.customerId);
+    return c ? c.name : (m.name || "Unlinked");
+    };
+
+  const row = (m) => {
+    const c = getDoc("customers", m.customerId);
+    const price = Number(m.monthlyPrice) || 0;
+    const bits = [];
+    if (m.vehicle) bits.push(esc(m.vehicle));
+    if (m.status === "active" && m.billingDay) bits.push(`bills on the ${ordinal(m.billingDay)}`);
+    if (m.status === "requested") bits.push("not billing yet");
+    if (c && c.phone) bits.push(esc(c.phone));
+    return `
+      <div class="list__item is-link" data-open="memberships" data-id="${m.id}">
+        <div class="list__main">
+          <div class="list__title">${esc(customerName(m))}</div>
+          <div class="list__sub">${bits.join(" · ") || "&nbsp;"}</div>
+        </div>
+        <span class="list__meta">${money(price)}/mo</span>
+        ${pill(MEMBERSHIP_PILL[m.status] || "muted", MEMBERSHIP_LABEL[m.status] || m.status)}
+      </div>`;
+  };
+
+  const group = (title, items, note) => items.length ? `
+    <section class="card">
+      <div class="card__head"><h3>${title}</h3><span class="spacer"></span><span class="muted">${items.length}</span></div>
+      ${note ? `<div class="card__body"><p class="muted">${note}</p></div>` : ""}
+      <div class="list">${items.map(row).join("")}</div>
+    </section>` : "";
+
+  return `
+    <div class="grid grid--3" style="margin-bottom:18px">
+      <div class="card stat">${icon("repeat", "stat__icon")}<span class="stat__label">Monthly recurring revenue</span><span class="stat__value">${money(monthly)}</span>
+        <span class="stat__sub">${active.length} active member${active.length === 1 ? "" : "s"}${active.length ? ` · ${money(perMember)} average` : ""}</span></div>
+      <div class="card stat">${icon("inbox", "stat__icon")}<span class="stat__label">Waiting on you</span><span class="stat__value">${requested.length}</span>
+        <span class="stat__sub">${requested.length ? "Confirm the first visit and set up payment" : "No pending requests"}</span></div>
+      <div class="card stat">${icon("trend", "stat__icon")}<span class="stat__label">A year at this rate</span><span class="stat__value">${money(monthly * 12)}</span>
+        <span class="stat__sub">If nobody joins or leaves</span></div>
+    </div>
+
+    <div class="toolbar">
+      <span class="muted">A membership is one vehicle, one detail a month. Mark it Active once you are actually collecting the payment.</span>
+      <span class="spacer"></span>
+      <button class="btn btn--primary" type="button" data-new="memberships">${icon("plus")}Add member</button>
+    </div>
+
+    ${all.length ? "" : `<div class="card">${emptyState("repeat", "No memberships yet", "Sign someone up from the website, or add one here if you arranged it in person.", `<button class="btn btn--primary" type="button" data-new="memberships">${icon("plus")}Add member</button>`)}</div>`}
+
+    ${group("Requested", requested, "These came in from the website. Nothing is being charged until you set payment up and mark them Active.")}
+    ${group("Active", active)}
+    ${group("Paused", paused)}
+    ${group("Cancelled", cancelled)}
+  `;
 };
 
 /* ---------- inventory ---------- */
@@ -1677,6 +1917,7 @@ $("#view").addEventListener("change", (e) => {
   const t = e.target;
   if (t.matches("[data-jobsstatus]")) { S.ui.jobsStatus = t.value; render(); }
   else if (t.matches("[data-custtag]")) { S.ui.customersTag = t.value; render(); }
+  else if (t.matches("[data-calcrew]")) { S.ui.calCrew = t.value; render(); }
   else if (t.matches("[data-dircat]")) { S.ui.directoryCat = t.value; render(); }
   else if (t.matches("[data-socialplatform]")) { S.ui.socialPlatform = t.value; render(); }
   else if (t.matches("[data-financemonth]")) { S.ui.financeMonth = t.value; render(); }

@@ -23,7 +23,46 @@ The server binds `0.0.0.0` and reads `process.env.PORT`, which is what Replit ex
 
 ## Admin portal
 
-At `/admin`.
+At `/admin`. Four groups in the sidebar:
+
+| Group | Pages |
+| --- | --- |
+| Overview | Dashboard, Calendar |
+| Customers | Leads, Customers, Subscriptions |
+| Work | Jobs, Tasks |
+| Business | Finance, Inventory, Social media, Directory, Settings |
+
+### Subscriptions and MRR
+
+`/admin#/subscriptions` is the membership list, grouped by status, with monthly
+recurring revenue across the top. MRR counts only memberships marked **Active**.
+
+Status means exactly this:
+
+| Status | Meaning |
+| --- | --- |
+| Requested | Came in from the website. Nothing is being collected. |
+| Active | You are collecting the monthly payment, however you collect it. |
+| Paused | Temporarily not billing, still a member. |
+| Cancelled | Ended. |
+
+The site still cannot charge a card, so "Active" is a statement about what you
+are collecting, not something the software does. Marking a membership Active or
+Paused tags the customer as a Member in the CRM and links the two records, so
+the customer page and the subscription page never disagree.
+
+### Crew
+
+Team members live in Settings → Team. Once they exist, every job can be
+assigned to one, and the assignee shows on the job board card, the jobs list,
+the dashboard agenda and the calendar tooltip. The calendar has a crew filter,
+including an "Unassigned" option for finding work nobody has picked up.
+
+### Linking a job to an existing customer
+
+The job form's Customer dropdown lists everyone in the CRM, so a job that never
+came through the website can be attached to the right person. Choosing
+"+ New customer" creates the record inline. The same applies to memberships.
 
 ### Access
 

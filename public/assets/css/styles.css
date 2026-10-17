@@ -1581,3 +1581,18 @@ html[data-lang-pending] body { visibility: hidden; }
   .hero-grid .hero-content h1 { font-size: clamp(44px, 9vw, 86px); }
   .hero-badges { gap: 14px 22px; padding-bottom: 24px; margin-bottom: 26px; }
 }
+
+/* Booking form opens with two choices, not four. */
+.choices--compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 520px) { .choices--compact { grid-template-columns: 1fr; } }
+.choice[hidden] { display: none; }
+.choice-more {
+  display: inline-block; margin-top: 10px; padding: 6px 2px;
+  background: none; border: 0; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; color: var(--cyan-300);
+  border-bottom: 1px dashed rgba(69, 216, 255, .5);
+}
+.choice-more:hover { color: #fff; border-bottom-color: #fff; }
+.choice-more[hidden] { display: none; }
+/* Compact boxes: the name and price on one line each, no badge row. */
+.choices--compact .choice-box { gap: 2px; padding: 12px 14px; }
