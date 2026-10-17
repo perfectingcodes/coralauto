@@ -505,6 +505,8 @@ $("#scrim").onclick = () => openNav(false);
 $("#nav").addEventListener("click", () => openNav(false));
 
 $("#logout").onclick = async () => {
+  // Only meaningful when ADMIN_PASSWORD is set; the button is hidden otherwise.
+  if (S.me && S.me.open) return;
   try { await api("POST", "/logout"); } catch { /* ignore */ }
   S.data = null;
   showLogin();
@@ -581,7 +583,9 @@ async function boot() {
   S.data = await api("GET", "/bootstrap");
   $("#login").hidden = true;
   $("#app").hidden = false;
-  $("#dev-banner").hidden = !S.me.devPassword;
+  // Standing reminder while the portal has no password on it.
+  $("#dev-banner").hidden = !S.me.open;
+  $("#logout").hidden = Boolean(S.me.open);
   S.route = parseHash();
   render();
 }
