@@ -163,6 +163,31 @@ job photos at 900x675 and re-run `make_responsive.py`:
 card-exterior.webp   card-interior.webp   card-full.webp   card-addons.webp
 ```
 
+### Job videos
+
+Seven vertical clips from real jobs live in `public/assets/video/`. The
+originals were HEVC `.MOV` straight off a phone (1080x1920, 66MB total).
+HEVC in MP4 does not play reliably outside Safari, so they are re-encoded to
+H.264 at 540x960, which every browser handles. Portrait is kept — that is how
+they were shot.
+
+`scripts/process_videos.sh` does the conversion and pulls a poster from about
+45% into each clip, because the first frame of a phone video is usually
+mid-motion. It uses `avconvert`, which ships with macOS, so there is no ffmpeg
+dependency. Re-run it with the originals in `~/Downloads`, or pass another
+directory as the first argument. Add a new clip by adding a line to the
+`CLIPS` list in that script and a `video.<slug>` caption to both languages in
+`lib/i18n.js`.
+
+Nothing downloads until someone taps a clip. The page loads only the posters
+(344KB for all seven); the video itself is fetched on the tap, one at a time,
+and tapping the playing clip stops it. That matters because the clips total
+35MB and most visitors will watch none of them.
+
+The server serves video with byte-range support (`Accept-Ranges`, 206
+responses, suffix ranges and 416 for unsatisfiable ones). Without it a browser
+cannot seek, and some refuse to start playback at all.
+
 ### Responsive variants
 
 Every large image has a `-sm` companion built by `scripts/make_responsive.py`,

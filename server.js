@@ -37,6 +37,10 @@ const MIME = {
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".webp": "image/webp",
+  ".mp4": "video/mp4",
+  ".m4v": "video/mp4",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -91,12 +95,48 @@ function serveStatic(req, res) {
 
       // Media is immutable enough to cache hard; markup, CSS and JS revalidate
       // so a redeploy is picked up immediately.
-      const isMedia = /\.(webp|png|jpe?g|svg|ico|woff2)$/.test(ext);
-      send(res, 200, data, {
+      const isMedia = /\.(webp|png|jpe?g|svg|ico|woff2|mp4|m4v|webm|mov)$/.test(ext);
+      const isVideo = /\.(mp4|m4v|webm|mov)$/.test(ext);
+      const headers = {
         "Content-Type": MIME[ext] || "application/octet-stream",
         "Cache-Control": isMedia ? "public, max-age=604800" : "no-cache",
         "Last-Modified": stat && stat.mtime ? stat.mtime.toUTCString() : new Date().toUTCString()
-      });
+      };
+
+      // Video needs byte ranges: without them a browser cannot seek, and some
+      // refuse to start playback at all.
+      if (isVideo) {
+        headers["Accept-Ranges"] = "bytes";
+        const range = req.headers.range;
+        const match = range && /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+        if (match) {
+          const size = data.length;
+          let start = match[1] === "" ? null : Number(match[1]);
+          let end = match[2] === "" ? null : Number(match[2]);
+
+          // "bytes=-500" means the last 500 bytes.
+          if (start === null) {
+            if (end === null || end === 0) {
+              return send(res, 416, "", { "Content-Range": `bytes */${size}` });
+            }
+            start = Math.max(0, size - end);
+            end = size - 1;
+          } else {
+            if (end === null || end >= size) end = size - 1;
+          }
+
+          if (start >= size || start > end) {
+            return send(res, 416, "", { "Content-Range": `bytes */${size}` });
+          }
+
+          return send(res, 206, data.subarray(start, end + 1), Object.assign({}, headers, {
+            "Content-Range": `bytes ${start}-${end}/${size}`,
+            "Content-Length": String(end - start + 1)
+          }));
+        }
+      }
+
+      send(res, 200, data, headers);
     });
   });
 }

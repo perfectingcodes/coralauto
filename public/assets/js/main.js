@@ -719,6 +719,71 @@
 
   if (form) syncPlan();
 
+  /* ---------- Job clips ---------- */
+  /* Nothing is fetched until someone asks for it: each tile is a poster image
+     until tapped, at which point the video replaces it in place. Only one
+     plays at a time. */
+  (function wireClips() {
+    var rail = document.querySelector(".clips-rail");
+    if (!rail) return;
+
+    var playing = null;
+
+    function stop(btn) {
+      if (!btn) return;
+      var v = btn.querySelector("video");
+      if (v) {
+        v.pause();
+        v.remove();
+      }
+      var img = btn.querySelector("img");
+      if (img) img.hidden = false;
+      btn.classList.remove("is-playing");
+    }
+
+    rail.addEventListener("click", function (e) {
+      var btn = e.target.closest(".clip-btn");
+      if (!btn) return;
+
+      // Tapping the one already running just stops it.
+      if (btn === playing) {
+        stop(btn);
+        playing = null;
+        return;
+      }
+
+      stop(playing);
+      playing = btn;
+
+      var src = btn.getAttribute("data-video");
+      var poster = btn.querySelector("img");
+      var video = document.createElement("video");
+      video.src = src;
+      video.controls = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.playsInline = true;
+      // Muted so autoplay is allowed everywhere; the controls let them
+      // turn sound on.
+      video.muted = true;
+      video.setAttribute("muted", "");
+      if (poster) {
+        video.poster = poster.getAttribute("src");
+        poster.hidden = true;
+      }
+
+      btn.classList.add("is-playing");
+      btn.appendChild(video);
+
+      var attempt = video.play();
+      if (attempt && typeof attempt.catch === "function") {
+        attempt.catch(function () {
+          // Autoplay refused: leave the controls for them to press.
+        });
+      }
+    });
+  })();
+
   /* ---------- Footer year ---------- */
   var year = document.getElementById("year");
   if (year) year.textContent = String(new Date().getFullYear());

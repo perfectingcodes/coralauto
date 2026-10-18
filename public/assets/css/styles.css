@@ -1596,3 +1596,72 @@ html[data-lang-pending] body { visibility: hidden; }
 .choice-more[hidden] { display: none; }
 /* Compact boxes: the name and price on one line each, no badge row. */
 .choices--compact .choice-box { gap: 2px; padding: 12px 14px; }
+
+/* ==========================================================================
+   Job clips — vertical phone video
+   ========================================================================== */
+.clips { margin-top: clamp(34px, 4vw, 52px); }
+.clips-head { margin-bottom: 18px; }
+.clips-head h3 {
+  font-family: var(--font-display); font-weight: 900; font-style: italic; font-stretch: 116%;
+  font-size: clamp(20px, 2.4vw, 26px); text-transform: uppercase; color: var(--ink-900);
+  margin-bottom: 6px;
+}
+.clips-head p { font-size: 14.5px; color: var(--ink-500); }
+
+/* A rail on phones, a grid once there is room. Scrolling sideways beats
+   a column of seven tall videos on a small screen. */
+.clips-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, 42vw);
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.clips-rail > * { scroll-snap-align: start; }
+@media (min-width: 760px) {
+  .clips-rail {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    overflow: visible;
+  }
+}
+
+.clip { min-width: 0; }
+.clip-btn {
+  position: relative; display: block; width: 100%; padding: 0;
+  border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+  background: var(--navy-800); cursor: pointer;
+  aspect-ratio: 9 / 16;
+  transition: transform .22s cubic-bezier(.2,.8,.3,1), box-shadow .22s ease, border-color .22s ease;
+}
+.clip-btn:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(33,196,240,.5); }
+.clip-btn img, .clip-btn video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.clip-play {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+  display: grid; place-items: center;
+  width: 52px; height: 52px; border-radius: 50%;
+  font-size: 20px; color: #041624;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, .6);
+  transition: transform .22s ease, background-color .22s ease;
+  pointer-events: none;
+}
+.clip-btn:hover .clip-play { transform: translate(-50%, -50%) scale(1.08); background: #fff; }
+.clip-play .ic { margin-left: 3px; }       /* optical centring of the triangle */
+/* Once a clip is playing the poster and button chrome get out of the way. */
+.clip-btn.is-playing { cursor: default; }
+.clip-btn.is-playing .clip-play { display: none; }
+.clip-btn.is-playing:hover { transform: none; }
+
+.clip figcaption {
+  margin-top: 9px; font-size: 13px; font-weight: 600; color: var(--ink-700);
+  line-height: 1.35;
+}
