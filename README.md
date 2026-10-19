@@ -179,6 +179,11 @@ directory as the first argument. Add a new clip by adding a line to the
 `CLIPS` list in that script and a `video.<slug>` caption to both languages in
 `lib/i18n.js`.
 
+Three clips are in view at a time on a desktop, with arrows that move the rail
+one tile per press and a counter underneath. On a phone it is a swipeable rail
+and the arrows are hidden, since swiping is the natural gesture there. Seven
+tiles in a grid took over the page.
+
 Nothing downloads until someone taps a clip. The page loads only the posters
 (344KB for all seven); the video itself is fetched on the tap, one at a time,
 and tapping the playing clip stops it. That matters because the clips total
@@ -247,30 +252,42 @@ machine polishing and will not remove scratches or every water spot.
 
 ### What actually happens when someone books
 
-Everything that arrives from the site is a **request**, not a confirmed
-appointment. `lib/booking.js` records it with `status: "requested"`, and it
-stays that way until someone confirms it in the admin portal. That is the
-point: a preferred time has to be checked against the real calendar before it
-becomes a booking.
+A website request becomes a **job** with status `new`, which is what the admin
+calls a lead. There is no separate appointments collection: the board,
+calendar, finance and customer pages are all built on jobs, so a booking stored
+anywhere else is invisible to every one of them.
 
-The time dropdown only ever offers genuinely open slots. `lib/scheduling.js`
-works them out from the business hours in settings, minus existing
-appointments, minus anything less than an hour away. Confirmed work always
-blocks a slot; an unconfirmed request holds its slot for 48 hours so two people
-cannot ask for the same time, then releases it so an abandoned request cannot
-wall off a slot forever.
-
-Confirming is a real action, not a status edit:
+The existing status flow already models the lifecycle:
 
 ```
-POST /api/admin/appointments/:id/confirm      { date?, time?, force? }
-POST /api/admin/appointments/:id/reschedule   { date, time }
-POST /api/admin/appointments/:id/cancel       { reason? }
-GET  /api/admin/appointments/:id/reminders
+new -> quoted -> scheduled -> in_progress -> completed -> paid
 ```
 
-Confirm refuses a slot that clashes with another confirmed appointment unless
-you pass `force`. Confirming is also what schedules the reminders.
+Everything from the website arrives as `new`. It stays a request until someone
+moves it on, because a preferred time has to be checked against the real
+calendar first. Moving a job to `scheduled` — on the board, or through the
+confirm endpoint — is what schedules the text reminders. Cancelling clears
+them.
+
+The time dropdown only offers genuinely open slots. `lib/scheduling.js` works
+them out from the business hours in settings, minus existing jobs, minus
+anything less than an hour away. Booked work always blocks a slot; an
+unconfirmed lead holds its requested slot for 48 hours so two people cannot ask
+for the same time, then releases it.
+
+```
+POST /api/admin/jobs/:id/confirm      { date?, time?, force? }
+POST /api/admin/jobs/:id/reschedule   { date, time, force? }
+POST /api/admin/jobs/:id/cancel       { reason? }
+GET  /api/admin/jobs/:id/reminders
+```
+
+Confirm and reschedule refuse a slot that clashes with other booked work unless
+you pass `force`.
+
+Bookings made before this was unified lived in an `appointments` collection the
+admin never read. `db.migrateAppointments()` runs once on boot and moves them
+across; it is idempotent and leaves a marker so it only happens once.
 
 ### MEMBERSHIP STATUS — read this before launch
 

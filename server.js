@@ -377,6 +377,7 @@ const JOIN_PATHS = ["/join", "/join/", "/unirse", "/unirse/"];
 
 server.listen(PORT, HOST, () => {
   console.log(`Coral Auto Spa running at http://${HOST}:${PORT}`);
+  db.migrateAppointments();
   reminders.start();
   const sms = require("./lib/sms");
   if (!sms.isConfigured()) {

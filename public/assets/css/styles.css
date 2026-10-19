@@ -786,9 +786,20 @@ figure { margin: 0; }
 .step-dot.is-done .step-dot-label { color: rgba(255, 255, 255, .72); }
 .step-dot.is-done::after { background: var(--cyan-500); }
 
-/* Steps themselves */
-.form-step { display: grid; }
+/* Steps themselves.
+   The explicit minmax(0, 1fr) column matters: without it the implicit grid
+   column is sized to max-content, and the wrapping chip row inside step three
+   reports its unwrapped width. That pushed the whole step wider than the
+   phone screen. */
+.form-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
 .form-step[hidden] { display: none; }
+/* Belt and braces: nothing inside a step may force the form wider. */
+.form-step > *, .book-form { min-width: 0; }
+.checks, .addon-field, .member-terms-box { min-width: 0; max-width: 100%; }
 .form-step.is-entering { animation: stepIn .34s cubic-bezier(.2,.8,.3,1) both; }
 @keyframes stepIn {
   from { opacity: 0; transform: translateX(14px); }
@@ -1609,27 +1620,54 @@ html[data-lang-pending] body { visibility: hidden; }
 }
 .clips-head p { font-size: 14.5px; color: var(--ink-500); }
 
-/* A rail on phones, a grid once there is room. Scrolling sideways beats
-   a column of seven tall videos on a small screen. */
+/* One rail at every size. On a phone you swipe it; on a desktop exactly three
+   clips are in view and the arrows move it one at a time. Seven tiles in a
+   grid took over the page. */
+.clips-wrap { position: relative; }
 .clips-rail {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(150px, 42vw);
   gap: 12px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
+  /* proximity, not mandatory: mandatory fights programmatic scrolling,
+     especially while the section is still mid reveal animation. */
+  scroll-snap-type: x proximity;
   padding-bottom: 10px;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
+.clips-rail::-webkit-scrollbar { display: none; }
 .clips-rail > * { scroll-snap-align: start; }
+
 @media (min-width: 760px) {
-  .clips-rail {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    overflow: visible;
-  }
+  /* Exactly three across, gaps accounted for. */
+  .clips-rail { grid-auto-columns: calc((100% - 2 * 16px) / 3); gap: 16px; }
+}
+
+/* Arrows sit outside the tiles on wide screens and are hidden on touch, where
+   swiping is the natural gesture. */
+.clips-nav {
+  position: absolute; top: calc(50% - 26px); translate: 0 -50%;
+  z-index: 3;
+  display: none; place-items: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid var(--line);
+  color: var(--ink-900); font-size: 20px;
+  box-shadow: 0 10px 26px -10px rgba(0, 0, 0, .45);
+  transition: background-color .2s ease, transform .2s ease, opacity .2s ease;
+}
+.clips-nav:hover { transform: translateY(-50%) scale(1.06); }
+.clips-nav[disabled] { opacity: 0; pointer-events: none; }
+.clips-prev { left: -14px; }
+.clips-next { right: -14px; }
+@media (min-width: 760px) { .clips-nav { display: grid; } }
+
+.clips-count {
+  margin-top: 10px; text-align: center;
+  font-size: 12px; font-weight: 600; letter-spacing: .06em;
+  color: var(--ink-500);
 }
 
 .clip { min-width: 0; }
