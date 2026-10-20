@@ -189,9 +189,22 @@ Nothing downloads until someone taps a clip. The page loads only the posters
 and tapping the playing clip stops it. That matters because the clips total
 35MB and most visitors will watch none of them.
 
-The server serves video with byte-range support (`Accept-Ranges`, 206
-responses, suffix ranges and 416 for unsatisfiable ones). Without it a browser
-cannot seek, and some refuse to start playback at all.
+The server streams video off disk with byte-range support (`Accept-Ranges`,
+206 responses, suffix ranges, 416 for unsatisfiable ones). Both halves matter:
+
+- **Ranges**, because without them a browser cannot seek and some refuse to
+  start playback at all.
+- **Streaming**, because the first version read each whole file into memory per
+  request. A browser playing one clip issues a string of range requests, and
+  buffering an 8MB file for every one of them is how you exhaust a small
+  container. Measured on the same load (280 range requests plus ten concurrent
+  full downloads), the old code peaked at 462MB of resident memory against
+  73MB for the streaming version. That is why the clips played locally but
+  failed on the deployed app, which runs on a memory-capped Autoscale
+  container.
+
+Only HTML is still read whole, because the language dictionaries and business
+config are injected into it before it goes out.
 
 ### Responsive variants
 

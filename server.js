@@ -68,31 +68,82 @@ function resolveFile(urlPath) {
   return full;
 }
 
+/** The single page, used for unknown paths. */
+function sendIndexFallback(req, res) {
+  fs.readFile(path.join(ROOT, "index.html"), (err, html) => {
+    if (err) return send(res, 404, "Not found", { "Content-Type": MIME[".txt"] });
+    send(res, 404, Buffer.from(injectBoot(html.toString("utf8"), req)), { "Content-Type": MIME[".html"] });
+  });
+}
+
+/**
+ * Stream a byte range straight off disk.
+ *
+ * Video is never read into memory whole. A browser playing a clip issues a
+ * string of range requests, and buffering an 8MB file for each one is how you
+ * run a small container out of memory — which is exactly what made the videos
+ * fail to load on the deployed app while working fine locally.
+ */
+function streamFile(req, res, file, size, headers, isVideo) {
+  let start = 0;
+  let end = size - 1;
+  let status = 200;
+  const out = Object.assign({}, headers);
+
+  if (isVideo) {
+    out["Accept-Ranges"] = "bytes";
+    const match = req.headers.range && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range.trim());
+    if (match) {
+      let from = match[1] === "" ? null : Number(match[1]);
+      let to = match[2] === "" ? null : Number(match[2]);
+
+      // "bytes=-500" means the last 500 bytes.
+      if (from === null) {
+        if (to === null || to === 0) {
+          return send(res, 416, "", { "Content-Range": `bytes */${size}` });
+        }
+        from = Math.max(0, size - to);
+        to = size - 1;
+      } else if (to === null || to >= size) {
+        to = size - 1;
+      }
+
+      if (from >= size || from > to) {
+        return send(res, 416, "", { "Content-Range": `bytes */${size}` });
+      }
+
+      start = from;
+      end = to;
+      status = 206;
+      out["Content-Range"] = `bytes ${start}-${end}/${size}`;
+    }
+  }
+
+  out["Content-Length"] = String(end - start + 1);
+  res.writeHead(status, Object.assign({ "X-Content-Type-Options": "nosniff" }, out));
+
+  if (req.method === "HEAD") return res.end();
+
+  const stream = fs.createReadStream(file, { start, end });
+  stream.on("error", () => res.destroy());
+  // A viewer who scrubs or navigates away aborts mid-response; tear the read
+  // down with it rather than leaking a file handle per abandoned request.
+  res.on("close", () => stream.destroy());
+  stream.pipe(res);
+}
+
 function serveStatic(req, res) {
   let file = resolveFile(req.url);
   if (!file) return send(res, 403, "Forbidden", { "Content-Type": MIME[".txt"] });
 
   fs.stat(file, (err, stat) => {
-    if (!err && stat.isDirectory()) file = path.join(file, "index.html");
+    if (err) return sendIndexFallback(req, res);
+    if (stat.isDirectory()) file = path.join(file, "index.html");
 
-    fs.readFile(file, (readErr, data) => {
-      if (readErr) {
-        // Unknown path: fall back to the single page.
-        return fs.readFile(path.join(ROOT, "index.html"), (fallbackErr, html) => {
-          if (fallbackErr) return send(res, 404, "Not found", { "Content-Type": MIME[".txt"] });
-          send(res, 404, html, { "Content-Type": MIME[".html"] });
-        });
-      }
+    fs.stat(file, (err2, stat2) => {
+      if (err2 || !stat2.isFile()) return sendIndexFallback(req, res);
 
       const ext = path.extname(file).toLowerCase();
-
-      // Inject language + business config into the page so the client has both
-      // dictionaries before first paint. No extra request, no flash of the
-      // wrong language.
-      if (ext === ".html") {
-        data = Buffer.from(injectBoot(data.toString("utf8"), req));
-      }
-
       // Media is immutable enough to cache hard; markup, CSS and JS revalidate
       // so a redeploy is picked up immediately.
       const isMedia = /\.(webp|png|jpe?g|svg|ico|woff2|mp4|m4v|webm|mov)$/.test(ext);
@@ -100,95 +151,22 @@ function serveStatic(req, res) {
       const headers = {
         "Content-Type": MIME[ext] || "application/octet-stream",
         "Cache-Control": isMedia ? "public, max-age=604800" : "no-cache",
-        "Last-Modified": stat && stat.mtime ? stat.mtime.toUTCString() : new Date().toUTCString()
+        "Last-Modified": stat2.mtime.toUTCString()
       };
 
-      // Video needs byte ranges: without them a browser cannot seek, and some
-      // refuse to start playback at all.
-      if (isVideo) {
-        headers["Accept-Ranges"] = "bytes";
-        const range = req.headers.range;
-        const match = range && /^bytes=(\d*)-(\d*)$/.exec(range.trim());
-        if (match) {
-          const size = data.length;
-          let start = match[1] === "" ? null : Number(match[1]);
-          let end = match[2] === "" ? null : Number(match[2]);
-
-          // "bytes=-500" means the last 500 bytes.
-          if (start === null) {
-            if (end === null || end === 0) {
-              return send(res, 416, "", { "Content-Range": `bytes */${size}` });
-            }
-            start = Math.max(0, size - end);
-            end = size - 1;
-          } else {
-            if (end === null || end >= size) end = size - 1;
-          }
-
-          if (start >= size || start > end) {
-            return send(res, 416, "", { "Content-Range": `bytes */${size}` });
-          }
-
-          return send(res, 206, data.subarray(start, end + 1), Object.assign({}, headers, {
-            "Content-Range": `bytes ${start}-${end}/${size}`,
-            "Content-Length": String(end - start + 1)
-          }));
-        }
+      // HTML is the one thing read whole, because the language dictionaries
+      // and business config are injected into it before it goes out.
+      if (ext === ".html") {
+        return fs.readFile(file, (readErr, html) => {
+          if (readErr) return sendIndexFallback(req, res);
+          send(res, 200, Buffer.from(injectBoot(html.toString("utf8"), req)), headers);
+        });
       }
 
-      send(res, 200, data, headers);
+      streamFile(req, res, file, stat2.size, headers, isVideo);
     });
   });
 }
-
-/**
- * Decode the data: URLs the form sends and write them into uploads/.
- * Returns the saved filenames. Anything that fails validation is skipped
- * rather than failing the whole booking — the enquiry matters more.
- */
-function savePhotos(photos, ref) {
-  if (!Array.isArray(photos) || !photos.length) return [];
-
-  try {
-    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-  } catch (err) {
-    console.error("Could not create uploads dir:", err.message);
-    return [];
-  }
-
-  const saved = [];
-
-  photos.slice(0, MAX_PHOTOS).forEach((photo, i) => {
-    if (!photo || typeof photo.data !== "string") return;
-
-    const match = /^data:([a-z]+\/[a-z+.-]+);base64,(.+)$/i.exec(photo.data);
-    if (!match) return;
-
-    const mime = match[1].toLowerCase();
-    const ext = PHOTO_TYPES[mime];
-    if (!ext) return;
-
-    let buf;
-    try {
-      buf = Buffer.from(match[2], "base64");
-    } catch {
-      return;
-    }
-    if (!buf.length || buf.length > MAX_PHOTO_BYTES) return;
-
-    // Name the file ourselves; never trust the client's filename.
-    const filename = `${ref}-${i + 1}${ext}`;
-    try {
-      fs.writeFileSync(path.join(UPLOADS_DIR, filename), buf);
-      saved.push(filename);
-    } catch (err) {
-      console.error("Could not save photo:", err.message);
-    }
-  });
-
-  return saved;
-}
-
 
 /** Business contact details the public page may show. Empty fields stay hidden. */
 function publicBusiness() {
