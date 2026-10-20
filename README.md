@@ -168,33 +168,35 @@ card-exterior.webp   card-interior.webp   card-full.webp   card-addons.webp
 Seven vertical clips from real jobs live in `public/assets/video/`. The
 originals were HEVC `.MOV` straight off a phone (1080x1920, 66MB total).
 HEVC in MP4 does not play reliably outside Safari, so they are re-encoded to
-H.264 at 540x960, which every browser handles. Portrait is kept — that is how
-they were shot.
+H.264 at 540x960. Portrait is kept — that is how they were shot.
 
-`scripts/process_videos.sh` does the conversion and pulls a poster from about
-45% into each clip, because the first frame of a phone video is usually
-mid-motion. It uses `avconvert`, which ships with macOS, so there is no ffmpeg
-dependency. Re-run it with the originals in `~/Downloads`, or pass another
-directory as the first argument. Add a new clip by adding a line to the
-`CLIPS` list in that script and a `video.<slug>` caption to both languages in
-`lib/i18n.js`.
+**They are silent.** The audio tracks are stripped, so there is nothing to
+unmute. `avconvert` cannot drop an audio track, so `scripts/strip_audio.swift`
+builds a composition of the video track alone and exports it passthrough: the
+video is copied rather than re-encoded, so there is no quality loss and the
+rotation is carried across with `preferredTransform`.
 
-Three clips are in view at a time on a desktop, with arrows that move the rail
-one tile per press and a counter underneath. On a phone it is a swipeable rail
-and the arrows are hidden, since swiping is the natural gesture there. Seven
-tiles in a grid took over the page.
+`scripts/process_videos.sh` runs the whole pipeline — convert, strip audio,
+pull a poster from about 45% into each clip. It uses `avconvert` and `swiftc`,
+both of which ship with macOS, so there is no ffmpeg dependency. Add a clip by
+adding a line to the `CLIPS` list in that script and a `video.<slug>` caption
+to both languages in `lib/i18n.js`.
 
 **Do not put the `<video>` inside the play `<button>`.** It is interactive
 content nested in interactive content: browsers neutralise it and the clip sits
-frozen on its poster, with no error and `readyState` reporting it is fully
-loaded. The first version did exactly this and none of the clips played. The
-video is now a sibling of the button inside `.clip-frame`, and the click
-handler ignores clicks that land on the video's own controls.
+frozen on its poster, with no error and `readyState` reporting it fully loaded.
+The first version did exactly this and none of the clips played. The video is
+now a sibling of the button inside `.clip-frame`, and the click handler ignores
+clicks that land on the video's own controls.
+
+Three clips are in view at a time on a desktop, with arrows that move the rail
+one tile per press and a counter underneath. On a phone it is a swipeable rail
+and the arrows are hidden.
 
 Nothing downloads until someone taps a clip. The page loads only the posters
 (344KB for all seven); the video itself is fetched on the tap, one at a time,
 and tapping the playing clip stops it. That matters because the clips total
-35MB and most visitors will watch none of them.
+33MB and most visitors will watch none of them.
 
 The server streams video off disk with byte-range support (`Accept-Ranges`,
 206 responses, suffix ranges, 416 for unsatisfiable ones). Both halves matter:
@@ -202,9 +204,7 @@ The server streams video off disk with byte-range support (`Accept-Ranges`,
 - **Ranges**, because without them a browser cannot seek and some refuse to
   start playback at all.
 - **Streaming**, because the first version read each whole file into memory per
-  request. A browser playing one clip issues a string of range requests, and
-  buffering an 8MB file for every one of them is how you exhaust a small
-  container. Measured on the same load (280 range requests plus ten concurrent
+  request. Measured on the same load (280 range requests plus ten concurrent
   full downloads), the old code peaked at 462MB of resident memory against
   73MB for the streaming version. That is why the clips played locally but
   failed on the deployed app, which runs on a memory-capped Autoscale
@@ -430,14 +430,9 @@ waiting on that one setting.
 
 ### Your own photos
 
-The brief asked for real customer work: matching before-and-after pairs,
-Instagram video, strong interior results as well as exterior shine. The gallery
-still shows the stock and generated photography, because no customer photos
-exist in the repo yet.
-
-The markup is ready for them — `#galleryGrid` is populated from the `gallery`
-collection when it has rows, and falls back to the current stills when it does
-not. Dropping in real before/after sets is a data change, not a code change.
+The gallery is the seven job clips and nothing else. The grid of stock and
+generated photography that used to sit above them has been removed, along with
+those image files. Real work on video beats stock stills.
 
 ### Connected services
 
@@ -449,15 +444,29 @@ not. Dropping in real before/after sets is a data change, not a code change.
 
 ## Mobile
 
-Checked at 375, 820 and 1440 px. What the build does for phones:
+Checked at 320, 360, 375, 414, 600, 768, 1024, 1280 and 1440. At every phone
+width: nothing overflows the viewport, no tap target is under 44px, and no body
+text is under 11px.
 
 - Form controls are 16px so iOS Safari does not zoom the page on focus
-- Hero height uses `dvh` where supported, so the shrinking browser chrome does
-  not clip it
-- Tap targets are at least 44px tall under `pointer: coarse`
+- Hero height uses `dvh` where supported
+- Tap targets are at least 44px under `pointer: coarse`
 - Hover lifts are disabled under `hover: none`, so nothing sticks after a tap
 - The header respects `env(safe-area-inset-*)` on notched devices
 - Responsive `srcset` as described above
+
+Two things worth knowing if you touch the layout:
+
+**Grid tracks size to their widest unbreakable content.** One long word inside
+a card pushes its whole column past the viewport, and because `body` has
+`overflow-x: hidden` the result is silently clipped rather than scrollable — it
+just looks like the text got cut off. Every card grid carries `min-width: 0` on
+its children to prevent this. It is what was clipping the hero headline and the
+pricing cards at 320px.
+
+**`.btn` is `white-space: nowrap`** so labels stay on one line. Below 360px the
+longest calls to action cannot, so that is relaxed there rather than letting
+them run off the screen.
 
 ## Cache headers
 

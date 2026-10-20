@@ -594,22 +594,6 @@ figure { margin: 0; }
   font-size: clamp(26px, 3.4vw, 46px); max-width: 7ch;
 }
 
-/* ---------- Gallery ---------- */
-.gallery-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-.gallery-item { position: relative; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4/3; background: var(--navy-800); }
-.gallery-item:first-child { grid-column: span 2; aspect-ratio: 8/3; }
-@media (max-width: 680px) { .gallery-item:first-child { grid-column: span 1; aspect-ratio: 4/3; } }
-.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .55s cubic-bezier(.2,.8,.3,1); }
-.gallery-item:hover img { transform: scale(1.06); }
-.gallery-item::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(3,10,21,0) 45%, rgba(3,10,21,.82) 100%);
-}
-.gallery-item figcaption {
-  position: absolute; left: 16px; bottom: 14px; z-index: 2;
-  font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #fff;
-}
-
 /* ==========================================================================
    Guarantee
    ========================================================================== */
@@ -1143,7 +1127,6 @@ a, button, [role="button"] { -webkit-tap-highlight-color: rgba(33, 196, 240, .18
   .btn:hover,
   .socials a:hover { transform: none; }
   .detail-card:hover .detail-media img,
-  .gallery-item:hover img { transform: none; }
   .btn-primary:hover::after { transform: translateX(-140%) skewX(-18deg); }
 }
 
@@ -1241,9 +1224,14 @@ html[data-lang-pending] body { visibility: hidden; }
   gap: clamp(28px, 4vw, 64px);
 }
 @media (max-width: 1040px) {
-  .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 30px; }
   .hero-content { max-width: none; }
 }
+/* A grid track sizes to its widest unbreakable content by default, so one long
+   word pushes the whole column past the viewport. min-width:0 lets the track
+   shrink and the content wrap instead. */
+.hero-grid > * { min-width: 0; }
+.hero-content > *, .member-card > * { min-width: 0; }
 
 /* The main offer. Sits beside the headline on desktop and directly under it
    on a phone, so nobody has to scroll past the services to find it. */
@@ -1612,14 +1600,6 @@ html[data-lang-pending] body { visibility: hidden; }
    Job clips — vertical phone video
    ========================================================================== */
 .clips { margin-top: clamp(34px, 4vw, 52px); }
-.clips-head { margin-bottom: 18px; }
-.clips-head h3 {
-  font-family: var(--font-display); font-weight: 900; font-style: italic; font-stretch: 116%;
-  font-size: clamp(20px, 2.4vw, 26px); text-transform: uppercase; color: var(--ink-900);
-  margin-bottom: 6px;
-}
-.clips-head p { font-size: 14.5px; color: var(--ink-500); }
-
 /* One rail at every size. On a phone you swipe it; on a desktop exactly three
    clips are in view and the arrows move it one at a time. Seven tiles in a
    grid took over the page. */
@@ -1721,3 +1701,75 @@ html[data-lang-pending] body { visibility: hidden; }
   margin-top: 9px; font-size: 13px; font-weight: 600; color: var(--ink-700);
   line-height: 1.35;
 }
+
+/* ==========================================================================
+   Mobile pass
+   ========================================================================== */
+
+/* Clips are the main event on this page now, so give them room on a phone.
+   At 42vw you got two and a half tiny tiles; at 62vw you get one and a half
+   properly watchable ones, and a bigger tap area with it. */
+@media (max-width: 759px) {
+  /* A definite track: minmax() here resolved to its minimum. */
+  .clips-rail { grid-auto-columns: min(62vw, 250px); gap: 14px; }
+  .clip figcaption { font-size: 13.5px; }
+}
+
+/* Anything a thumb has to hit gets a real 44px target. */
+@media (pointer: coarse), (max-width: 980px) {
+  /* The language switch was 32x28 — the smallest control on the page. */
+  .lang-btn { min-height: 44px; padding-inline: 14px; }
+  .lang-flag { font-size: 16px; }
+
+  .member-alt { min-height: 46px; display: flex; align-items: center; justify-content: center; }
+  .choice-more { min-height: 44px; padding-block: 11px; }
+  .clip-play { min-height: 44px; }
+}
+
+/* 10px uppercase is legible on a desktop and a squint on a phone. */
+@media (max-width: 760px) {
+  .badge > span:last-child { font-size: 11.5px; letter-spacing: .1em; }
+  .perk span { font-size: 11px; letter-spacing: .1em; }
+  .footer-bottom { font-size: 11.5px; }
+  .member-terms { font-size: 12px; }
+  .addons-intro, .addon-list p { font-size: 13.5px; }
+}
+
+/* Narrow phones (iPhone SE and similar, 320px).
+   The hero clamp floor was 44px, which renders "DETAILING" 317px wide inside
+   280px of usable width. body{overflow-x:hidden} meant it was silently
+   clipped rather than scrolling, so the headline simply lost its last letter. */
+@media (max-width: 360px) {
+  /* .btn is nowrap so labels stay on one line; at 320px the longest CTAs
+     cannot, so let them wrap rather than run off the screen. */
+  .btn { white-space: normal; text-align: center; line-height: 1.25; }
+  .btn-lg { padding-left: 22px; padding-right: 14px; font-size: 14px; }
+  .hero-grid .hero-content h1 { font-size: 37px; }
+  .hero-sub { font-size: 15px; }
+  .member-kicker { font-size: 16px; }
+  .member-amount { font-size: 46px; }
+  .display { letter-spacing: -0.02em; }
+  .section-head h2, .plan-name, .form-step-title { overflow-wrap: break-word; }
+}
+
+/* Grid tracks size to their widest unbreakable content, so a single long word
+   inside any card can push its column past the viewport. On a 320px phone that
+   showed up as clipped cards. min-width:0 lets every track shrink and the text
+   wrap instead. */
+.plan-grid > *,
+.detail-grid > *,
+.steps > *,
+.feature-row > *,
+.promise-list > *,
+.footer-cols > *,
+.price-layout > *,
+.guarantee-layout > *,
+.book-layout > *,
+.split > *,
+.choices > *,
+.halves > * { min-width: 0; }
+
+/* Long unbroken strings (an email address, a vehicle name) wrap rather than
+   widen their container. */
+.plan-name, .detail-title, .addon-list h4, .promise-list h3,
+.footer-col a, .contact-list a, .list__title { overflow-wrap: anywhere; }

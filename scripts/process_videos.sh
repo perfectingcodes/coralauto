@@ -15,6 +15,10 @@
 # Posters come from roughly 45% into each clip. The first frame of a phone
 # video is usually mid-motion or still focusing.
 #
+# The clips are silent. avconvert cannot drop an audio track, so a small
+# AVFoundation helper (scripts/strip_audio.swift) remuxes the video track on
+# its own, passthrough — no re-encode, no quality loss.
+#
 # Usage:  scripts/process_videos.sh [source-dir]      (default ~/Downloads)
 set -euo pipefail
 
@@ -26,6 +30,16 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 mkdir -p "$VID_OUT" "$IMG_OUT"
+
+# Build the audio stripper once per run.
+STRIP="$TMP/strip_audio"
+if xcrun swiftc -O -o "$STRIP" "$ROOT/scripts/strip_audio.swift" 2>/dev/null; then
+  :
+else
+  echo "  WARNING: could not build scripts/strip_audio.swift (needs Xcode command line tools)."
+  echo "           Clips will keep their audio track."
+  STRIP=""
+fi
 
 # source basename | output slug | seconds into the clip for the poster
 CLIPS="
@@ -49,6 +63,15 @@ echo "$CLIPS" | while IFS='|' read -r base slug at; do
   # --- the clip itself ---
   out="$VID_OUT/$slug.mp4"
   avconvert --source "$in" --output "$out" --preset Preset960x540 --replace >/dev/null 2>&1
+
+  # --- drop the audio track ---
+  if [ -n "$STRIP" ]; then
+    if "$STRIP" "$out" "$TMP/$slug-silent.mp4" 2>/dev/null; then
+      mv "$TMP/$slug-silent.mp4" "$out"
+    else
+      echo "  WARNING: could not strip audio from $slug"
+    fi
+  fi
 
   # --- the poster: a short cut at `at` seconds, thumbnailed, then WebP ---
   cut="$TMP/$slug-cut.mp4"

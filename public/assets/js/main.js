@@ -770,9 +770,11 @@
       var to = Math.min(first + per, tiles.length);
 
       if (count) {
-        count.textContent = tr("video.count", from + "-" + to + " of " + tiles.length, {
-          from: from, to: to, total: tiles.length
-        });
+        // "1-1 of 7" reads badly when only one tile fits, which is the case
+        // on a phone.
+        count.textContent = from === to
+          ? tr("video.countOne", from + " of " + tiles.length, { n: from, total: tiles.length })
+          : tr("video.count", from + "-" + to + " of " + tiles.length, { from: from, to: to, total: tiles.length });
       }
       if (prev) prev.disabled = rail.scrollLeft <= 2;
       if (next) next.disabled = rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 2;
@@ -837,7 +839,8 @@
       var btn = frame.querySelector(".clip-play");
       var video = document.createElement("video");
 
-      // Set before the source: the autoplay policy is evaluated against these.
+      // The clips carry no audio track at all. muted is still set because
+      // the autoplay policy is evaluated against it regardless.
       video.muted = true;
       video.setAttribute("muted", "");
       video.playsInline = true;
