@@ -1671,33 +1671,51 @@ html[data-lang-pending] body { visibility: hidden; }
 }
 
 .clip { min-width: 0; }
-.clip-btn {
-  position: relative; display: block; width: 100%; padding: 0;
+
+/* The frame holds the poster, the play button and — once started — the video.
+   The video is a sibling of the button, never inside it. */
+.clip-frame {
+  position: relative;
   border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
-  background: var(--navy-800); cursor: pointer;
+  background: var(--navy-800);
   aspect-ratio: 9 / 16;
   transition: transform .22s cubic-bezier(.2,.8,.3,1), box-shadow .22s ease, border-color .22s ease;
 }
-.clip-btn:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(33,196,240,.5); }
-.clip-btn img, .clip-btn video {
+@media (hover: hover) {
+  .clip-frame:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(33,196,240,.5); }
+}
+.clip-frame.is-playing { transform: none; }
+.clip-frame img, .clip-frame video {
   width: 100%; height: 100%; object-fit: cover; display: block;
 }
+.clip-frame img[hidden] { display: none; }
+
+/* The button covers the whole frame, so anywhere on the poster starts it. */
 .clip-play {
-  position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+  position: absolute; inset: 0; z-index: 2;
+  display: grid; place-items: center;
+  width: 100%; height: 100%; padding: 0;
+  border: 0; background: transparent; cursor: pointer;
+}
+.clip-play[hidden] { display: none; }
+.clip-play::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(3,10,21,0) 55%, rgba(3,10,21,.35) 100%);
+}
+.clip-play-dot {
+  position: relative;
   display: grid; place-items: center;
   width: 52px; height: 52px; border-radius: 50%;
   font-size: 20px; color: #041624;
   background: rgba(255, 255, 255, .92);
   box-shadow: 0 8px 24px -6px rgba(0, 0, 0, .6);
   transition: transform .22s ease, background-color .22s ease;
-  pointer-events: none;
 }
-.clip-btn:hover .clip-play { transform: translate(-50%, -50%) scale(1.08); background: #fff; }
-.clip-play .ic { margin-left: 3px; }       /* optical centring of the triangle */
-/* Once a clip is playing the poster and button chrome get out of the way. */
-.clip-btn.is-playing { cursor: default; }
-.clip-btn.is-playing .clip-play { display: none; }
-.clip-btn.is-playing:hover { transform: none; }
+.clip-play-dot .ic { margin-left: 3px; }   /* optical centring of the triangle */
+@media (hover: hover) {
+  .clip-play:hover .clip-play-dot { transform: scale(1.08); background: #fff; }
+}
+.clip-play:focus-visible { outline: 3px solid var(--cyan-500); outline-offset: -3px; }
 
 .clip figcaption {
   margin-top: 9px; font-size: 13px; font-weight: 600; color: var(--ink-700);

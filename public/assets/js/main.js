@@ -727,22 +727,22 @@
     var rail = document.getElementById("clipsRail");
     if (!rail) return;
 
-    var playing = null;
+    var playing = null;                       // the .clip-frame currently playing
     var prev = document.getElementById("clipsPrev");
     var next = document.getElementById("clipsNext");
     var count = document.getElementById("clipsCount");
     var tiles = Array.prototype.slice.call(rail.querySelectorAll(".clip"));
 
+    /* ---- carousel ---- */
+
     /* Tile positions measured against the rail itself.
        offsetLeft is relative to the nearest positioned ancestor, which here is
-       .clips-wrap, not the scroll container — using it put the rail at the
-       wrong scroll offset. Measuring rectangles avoids the whole question. */
+       .clips-wrap, not the scroll container. */
     function tileOffset(i) {
       if (!tiles[i]) return 0;
       return rail.scrollLeft + (tiles[i].getBoundingClientRect().left - rail.getBoundingClientRect().left);
     }
 
-    /** How far one tile is, including the gap. */
     function step() {
       if (tiles.length < 2) return rail.clientWidth;
       return Math.round(tiles[1].getBoundingClientRect().left - tiles[0].getBoundingClientRect().left);
@@ -753,13 +753,11 @@
       return s > 0 ? Math.max(1, Math.round(rail.clientWidth / s)) : 1;
     }
 
-    /* The index we are heading to. Kept as state rather than re-derived from
-       scrollLeft on every click: while a smooth scroll is still animating,
-       scrollLeft is somewhere in between, so deriving from it made repeated
-       clicks recompute the same target and the carousel stalled. */
+    /* The index we are heading to, kept as state: while a smooth scroll is
+       still animating, scrollLeft sits in between, so deriving the target from
+       it made repeated presses recompute the same tile and stall. */
     var index = 0;
 
-    /** Where the rail has actually settled, for the counter and the arrows. */
     function settledIndex() {
       var s = step();
       return s > 0 ? Math.max(0, Math.round(rail.scrollLeft / s)) : 0;
@@ -776,14 +774,10 @@
           from: from, to: to, total: tiles.length
         });
       }
-      // A 2px tolerance: browsers round fractional scroll positions.
       if (prev) prev.disabled = rail.scrollLeft <= 2;
       if (next) next.disabled = rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 2;
     }
 
-    /* Scroll to an absolute tile position rather than by a relative amount.
-       Relative scrollBy compounds rounding errors and can be swallowed when a
-       previous smooth scroll is still running. */
     function move(dir) {
       var maxIndex = Math.max(0, tiles.length - visibleCount());
       index = Math.max(0, Math.min(maxIndex, index + dir));
@@ -797,13 +791,10 @@
     var settleTimer = null;
     rail.addEventListener("scroll", function () {
       window.requestAnimationFrame(update);
-      // Once scrolling stops, trust the real position again — the person may
-      // have swiped rather than used the arrows.
       clearTimeout(settleTimer);
       settleTimer = setTimeout(function () { index = settledIndex(); }, 140);
     }, { passive: true });
 
-    // Arrow keys when the rail has focus.
     rail.addEventListener("keydown", function (e) {
       if (e.key === "ArrowRight") { e.preventDefault(); move(1); }
       else if (e.key === "ArrowLeft") { e.preventDefault(); move(-1); }
@@ -816,38 +807,37 @@
     document.addEventListener("coral:lang", update);
     update();
 
-    function stop(btn) {
-      if (!btn) return;
-      var v = btn.querySelector("video");
+    /* ---- playback ----
+       The video is a sibling of the play button, never a child of it. A
+       <video> nested inside a <button> is interactive content inside
+       interactive content: browsers neutralise it and it will not start,
+       which is why the clips sat frozen on their posters. */
+
+    function stop(frame) {
+      if (!frame) return;
+      var v = frame.querySelector("video");
       if (v) {
         v.pause();
+        v.removeAttribute("src");
+        v.load();                 // release the network/decoder handle
         v.remove();
       }
-      var img = btn.querySelector("img");
+      var img = frame.querySelector("img");
       if (img) img.hidden = false;
-      btn.classList.remove("is-playing");
+      var btn = frame.querySelector(".clip-play");
+      if (btn) btn.hidden = false;
+      frame.classList.remove("is-playing");
     }
 
-    rail.addEventListener("click", function (e) {
-      var btn = e.target.closest(".clip-btn");
-      if (!btn) return;
-
-      // Tapping the one already running just stops it.
-      if (btn === playing) {
-        stop(btn);
-        playing = null;
-        return;
-      }
-
+    function play(frame) {
       stop(playing);
-      playing = btn;
+      playing = frame;
 
-      var poster = btn.querySelector("img");
+      var poster = frame.querySelector("img");
+      var btn = frame.querySelector(".clip-play");
       var video = document.createElement("video");
 
-      // These have to be set before the source: the autoplay policy is
-      // evaluated against them, and a muted inline video is allowed to start
-      // without a further gesture.
+      // Set before the source: the autoplay policy is evaluated against these.
       video.muted = true;
       video.setAttribute("muted", "");
       video.playsInline = true;
@@ -856,21 +846,18 @@
       video.controls = true;
       video.preload = "auto";
       if (poster) video.poster = poster.getAttribute("src");
-
-      video.src = btn.getAttribute("data-video");
+      video.src = frame.getAttribute("data-video");
 
       if (poster) poster.hidden = true;
-      btn.classList.add("is-playing");
-      btn.appendChild(video);
+      if (btn) btn.hidden = true;
+      frame.classList.add("is-playing");
+      frame.appendChild(video);
 
-      /* Try now, and again once there is actually something to play. Calling
-         play() the instant the source is set loses the race on slower
-         connections, which left the clip sitting paused on its poster. */
       function attempt() {
         var p = video.play();
         if (p && typeof p.catch === "function") {
           p.catch(function () {
-            // Still refused: the controls are there for them to press.
+            // Refused or interrupted: the controls are there to press.
           });
         }
       }
@@ -878,6 +865,24 @@
         if (video.paused) attempt();
       }, { once: true });
       attempt();
+    }
+
+    rail.addEventListener("click", function (e) {
+      // Clicks on the video's own controls must not reach this handler.
+      if (e.target.closest("video")) return;
+
+      var btn = e.target.closest(".clip-play");
+      if (!btn) return;
+
+      var frame = btn.closest(".clip-frame");
+      if (!frame) return;
+
+      if (frame === playing) {
+        stop(frame);
+        playing = null;
+        return;
+      }
+      play(frame);
     });
   })();
 

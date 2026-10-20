@@ -184,6 +184,13 @@ one tile per press and a counter underneath. On a phone it is a swipeable rail
 and the arrows are hidden, since swiping is the natural gesture there. Seven
 tiles in a grid took over the page.
 
+**Do not put the `<video>` inside the play `<button>`.** It is interactive
+content nested in interactive content: browsers neutralise it and the clip sits
+frozen on its poster, with no error and `readyState` reporting it is fully
+loaded. The first version did exactly this and none of the clips played. The
+video is now a sibling of the button inside `.clip-frame`, and the click
+handler ignores clicks that land on the video's own controls.
+
 Nothing downloads until someone taps a clip. The page loads only the posters
 (344KB for all seven); the video itself is fetched on the tap, one at a time,
 and tapping the playing clip stops it. That matters because the clips total
